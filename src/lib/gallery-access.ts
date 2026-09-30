@@ -10,7 +10,7 @@ const TOKEN_PATTERN = /^[A-Za-z0-9_-]{16,64}$/;
 const ACCESS_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30일
 
 const GALLERY_FIELDS =
-  "id, title, share_token, password_hash, base_select_count, extra_price_krw, status, expires_at, trashed_at, photographers(display_name, studio_name)";
+  "id, photographer_id, title, client_name, share_token, password_hash, base_select_count, extra_price_krw, status, expires_at, trashed_at, photographers(display_name, studio_name)";
 
 async function findByToken(token: string) {
   if (!TOKEN_PATTERN.test(token)) return null;

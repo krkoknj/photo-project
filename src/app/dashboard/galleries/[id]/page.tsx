@@ -4,10 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonClass } from "@/components/form";
 import { requireUser } from "@/lib/auth";
-import { formatDateKst, isSelectionLocked, shareUrl, toDateInputKst } from "@/lib/gallery";
+import { formatDateKst, formatKrw, isSelectionLocked, shareUrl, toDateInputKst } from "@/lib/gallery";
+import { getPaymentOptions } from "@/lib/payments";
+import { extraAmount } from "@/lib/selection";
 import { siteUrl } from "@/lib/site";
 import { presignView } from "@/lib/storage";
 import {
+  confirmManualPayment,
   regenerateShareToken,
   removeGalleryPassword,
   reopenSelection,
@@ -39,7 +42,7 @@ function Section({ title, description, children }: { title: string; description?
 
 export default async function GalleryPage({ params }: PageProps<"/dashboard/galleries/[id]">) {
   const { id } = await params;
-  const { supabase } = await requireUser();
+  const { supabase, userId } = await requireUser();
 
   const { data: gallery } = await supabase
     .from("galleries")
@@ -97,6 +100,18 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
   );
   const totalPins = selectedPhotos.reduce((sum, p) => sum + p.pins.length, 0);
   const extraSelected = selectedPhotos.filter((p) => p.isExtra).length;
+  const extraDue = extraAmount(selectedPhotos.length, gallery);
+
+  const [{ data: paidOrders }, paymentOptions] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id, method, extra_count, amount_krw, paid_at")
+      .eq("gallery_id", gallery.id)
+      .eq("status", "paid")
+      .order("paid_at"),
+    getPaymentOptions(userId),
+  ]);
+  const noPaymentMethod = gallery.extra_price_krw > 0 && !paymentOptions.toss && !paymentOptions.bank;
 
   const url = shareUrl(siteUrl(), gallery.share_token);
   const locked = isSelectionLocked(gallery.status);
@@ -142,7 +157,7 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
           {selectedPhotos.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-2">
               <CopyFilenamesButton photos={selectedPhotos} />
-              {(gallery.status === "submitted" || gallery.status === "awaiting_payment") && (
+              {(gallery.status === "submitted" || gallery.status === "awaiting_payment") && !paidOrders?.length && (
                 <form action={reopenSelection.bind(null, gallery.id)}>
                   <ConfirmSubmitButton message="고객이 다시 고를 수 있도록 셀렉을 열까요? 고객이 다시 제출해야 확정돼요.">
                     셀렉 다시 열기
@@ -151,8 +166,40 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
               )}
             </div>
           )}
+          {gallery.status === "awaiting_payment" && (
+            <div className="mb-4 flex flex-col gap-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between dark:bg-amber-950 dark:text-amber-200">
+              <span>
+                추가 {extraSelected}장 · {formatKrw(extraDue)} 결제 대기 중. 계좌로 입금받았다면 확인을 눌러주세요.
+              </span>
+              <form action={confirmManualPayment.bind(null, gallery.id)}>
+                <ConfirmSubmitButton message={`${formatKrw(extraDue)} 입금을 확인했나요? 확인하면 셀렉이 확정돼요.`}>
+                  입금 확인
+                </ConfirmSubmitButton>
+              </form>
+            </div>
+          )}
+          {!!paidOrders?.length && (
+            <ul className="mb-4 space-y-1 text-sm">
+              {paidOrders.map((o) => (
+                <li key={o.id} className="text-green-700 dark:text-green-400">
+                  ✓ 추가 {o.extra_count}장 {formatKrw(o.amount_krw)} 결제 완료 ({o.method === "toss" ? "카드" : "계좌이체"}
+                  {o.paid_at && ` · ${formatDateKst(o.paid_at)}`})
+                </li>
+              ))}
+            </ul>
+          )}
           <SelectionResults photos={selectedPhotos} />
         </Section>
+      )}
+
+      {noPaymentMethod && (
+        <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          추가 보정 가격을 정했지만 결제 방법이 없어요. 고객이 추가 결제를 할 수 있도록{" "}
+          <Link href="/dashboard/settings" className="font-medium underline">
+            결제 설정
+          </Link>
+          에서 토스페이먼츠 키나 계좌를 등록해주세요.
+        </div>
       )}
 
       <Section

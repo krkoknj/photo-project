@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { formatDateKst, formatKrw } from "@/lib/gallery";
 import { getGalleryAccess, type SharedGallery } from "@/lib/gallery-access";
+import { getPaymentOptions } from "@/lib/payments";
+import { extraAmount } from "@/lib/selection";
 import { presignView } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { unlockGallery, type SavedPin } from "./actions";
@@ -27,8 +29,17 @@ function photographerName(gallery: SharedGallery) {
   return gallery.photographers?.studio_name || gallery.photographers?.display_name || "사진작가";
 }
 
-export default async function SharedGalleryPage({ params }: PageProps<"/g/[token]">) {
+// 결제 결과 문구는 고정된 목록에서만 고른다 (URL로 임의 문구를 띄울 수 없게).
+const PAYMENT_RESULT: Record<string, { tone: "ok" | "warn"; text: string }> = {
+  done: { tone: "ok", text: "결제가 완료되어 셀렉이 확정됐어요." },
+  canceled: { tone: "warn", text: "결제를 취소했어요. 준비되면 다시 결제해주세요." },
+  error: { tone: "warn", text: "결제를 완료하지 못했어요. 다시 시도하거나 작가님께 문의해주세요." },
+};
+
+export default async function SharedGalleryPage({ params, searchParams }: PageProps<"/g/[token]">) {
   const { token } = await params;
+  const { payment } = await searchParams;
+  const paymentResult = typeof payment === "string" ? PAYMENT_RESULT[payment] : undefined;
   const access = await getGalleryAccess(token);
 
   switch (access.state) {
@@ -46,7 +57,7 @@ export default async function SharedGalleryPage({ params }: PageProps<"/g/[token
 
   const { gallery } = access;
   const admin = createAdminClient();
-  const [{ data: rows }, { data: selections }, { data: pinRows }] = await Promise.all([
+  const [{ data: rows }, { data: selections }, { data: pinRows }, paymentOptions] = await Promise.all([
     admin
       .from("photos")
       .select("id, filename, thumb_key, preview_key, width, height")
@@ -61,7 +72,10 @@ export default async function SharedGalleryPage({ params }: PageProps<"/g/[token
       .eq("gallery_id", gallery.id)
       .eq("author", "client")
       .order("created_at"),
+    getPaymentOptions(gallery.photographer_id),
   ]);
+  const awaitingPayment = gallery.status === "awaiting_payment";
+  const extraDue = extraAmount(selections?.length ?? 0, gallery);
   const pins: SavedPin[] = (pinRows ?? []).map((p) => ({
     id: p.id,
     photoId: p.photo_id,
@@ -91,6 +105,34 @@ export default async function SharedGalleryPage({ params }: PageProps<"/g/[token
           사진 {photos.length}장
           {gallery.expires_at && ` · ${formatDateKst(gallery.expires_at)}까지 볼 수 있어요`}
         </p>
+        {paymentResult && (
+          <p
+            role="status"
+            className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+              paymentResult.tone === "ok"
+                ? "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-300"
+                : "bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+            }`}
+          >
+            {paymentResult.text}
+          </p>
+        )}
+        {awaitingPayment && (
+          <div className="mt-4 space-y-2 rounded-xl border border-amber-300 px-4 py-3 text-sm dark:border-amber-800">
+            <p className="font-medium">추가 보정 {formatKrw(extraDue)} 결제가 필요해요</p>
+            {paymentOptions.toss && <p>아래 &lsquo;카드 결제&rsquo; 버튼으로 바로 결제할 수 있어요.</p>}
+            {paymentOptions.bank && (
+              <p>
+                계좌이체: {paymentOptions.bank.bankName} <span className="font-mono">{paymentOptions.bank.account}</span> (
+                {paymentOptions.bank.holder})
+                <span className="block text-xs text-neutral-500">
+                  입금하시면 작가님이 확인한 뒤 셀렉이 확정돼요. 입금자명은 예약자 이름으로 해주세요.
+                </span>
+              </p>
+            )}
+            {!paymentOptions.toss && !paymentOptions.bank && <p>결제 방법은 작가님께 문의해주세요.</p>}
+          </div>
+        )}
         {gallery.base_select_count > 0 && (
           <p className="mt-4 rounded-xl bg-black/[.04] px-4 py-3 text-sm dark:bg-white/[.06]">
             보정 {gallery.base_select_count}장이 포함되어 있어요.
@@ -112,6 +154,7 @@ export default async function SharedGalleryPage({ params }: PageProps<"/g/[token
             }}
             initialSelected={(selections ?? []).map((s) => s.photo_id)}
             initialPins={pins}
+            canPayByCard={!!paymentOptions.toss}
           />
         ) : (
           <p className="px-4 text-sm text-neutral-500">아직 올라온 사진이 없어요.</p>

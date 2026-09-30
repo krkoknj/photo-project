@@ -7,6 +7,8 @@ import type { FormState } from "@/components/form";
 import { requireUser } from "@/lib/auth";
 import { endOfDayKst, isSelectionLocked } from "@/lib/gallery";
 import { hashPassword } from "@/lib/password";
+import { cancelPendingOrders, expectedExtra } from "@/lib/payments";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { fieldErrorsOf, galleryFormSchema, galleryPasswordSchema, readForm } from "./schema";
 
 // 모든 쿼리는 로그인한 작가의 세션으로 실행되므로 RLS가 소유권을 보장한다.
@@ -144,11 +146,49 @@ export async function reopenSelection(galleryId: string) {
     .eq("status", "paid");
   if (paid) return;
 
-  await supabase
+  const { data: reopened } = await supabase
     .from("galleries")
     .update({ status: "open", submitted_at: null })
     .eq("id", galleryId)
-    .in("status", ["submitted", "awaiting_payment"]);
+    .in("status", ["submitted", "awaiting_payment"])
+    .select("id");
+  if (reopened?.length) await cancelPendingOrders(galleryId);
+  refresh(galleryId);
+}
+
+// 계좌이체 입금을 작가가 확인한 경우. 금액은 지금 셀렉 기준으로 서버가 계산한다.
+export async function confirmManualPayment(galleryId: string) {
+  const { supabase } = await requireUser();
+  // RLS로 본인 갤러리인지 확인한 뒤에만 관리자 클라이언트로 주문을 기록한다 (orders는 작가가 직접 쓸 수 없음).
+  const { data: gallery } = await supabase
+    .from("galleries")
+    .select("id, status, base_select_count, extra_price_krw")
+    .eq("id", galleryId)
+    .maybeSingle();
+  if (!gallery || gallery.status !== "awaiting_payment") return;
+
+  const { extra, amount } = await expectedExtra(gallery);
+  if (extra <= 0) return;
+
+  const admin = createAdminClient();
+  await cancelPendingOrders(galleryId);
+  const { error } = await admin.from("orders").insert({
+    gallery_id: galleryId,
+    method: "manual",
+    toss_order_id: `manual-${randomBytes(9).toString("base64url")}`,
+    extra_count: extra,
+    unit_price_krw: gallery.extra_price_krw,
+    amount_krw: amount,
+    status: "paid",
+    paid_at: new Date().toISOString(),
+  });
+  if (error) return;
+
+  await admin
+    .from("galleries")
+    .update({ status: "submitted", submitted_at: new Date().toISOString() })
+    .eq("id", galleryId)
+    .eq("status", "awaiting_payment");
   refresh(galleryId);
 }
 

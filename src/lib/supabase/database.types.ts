@@ -63,13 +63,13 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "amount_krw": number,"created_at": string,"extra_count": number,"gallery_id": string,"id": string,"paid_at": string | null,"payment_key": string | null,"raw": Json | null,"status": Database["public"]['Enums']["order_status"],"toss_order_id": string,"unit_price_krw": number
+                    "amount_krw": number,"created_at": string,"extra_count": number,"gallery_id": string,"id": string,"method": Database["public"]['Enums']["payment_method"],"paid_at": string | null,"payment_key": string | null,"raw": Json | null,"status": Database["public"]['Enums']["order_status"],"toss_order_id": string,"unit_price_krw": number
                   }
                   Insert: {
-                    "amount_krw": number,"created_at"?: string,"extra_count": number,"gallery_id": string,"id"?: string,"paid_at"?: string | null,"payment_key"?: string | null,"raw"?: Json | null,"status"?: Database["public"]['Enums']["order_status"],"toss_order_id": string,"unit_price_krw": number
+                    "amount_krw": number,"created_at"?: string,"extra_count": number,"gallery_id": string,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"paid_at"?: string | null,"payment_key"?: string | null,"raw"?: Json | null,"status"?: Database["public"]['Enums']["order_status"],"toss_order_id": string,"unit_price_krw": number
                   }
                   Update: {
-                    "amount_krw"?: number,"created_at"?: string,"extra_count"?: number,"gallery_id"?: string,"id"?: string,"paid_at"?: string | null,"payment_key"?: string | null,"raw"?: Json | null,"status"?: Database["public"]['Enums']["order_status"],"toss_order_id"?: string,"unit_price_krw"?: number
+                    "amount_krw"?: number,"created_at"?: string,"extra_count"?: number,"gallery_id"?: string,"id"?: string,"method"?: Database["public"]['Enums']["payment_method"],"paid_at"?: string | null,"payment_key"?: string | null,"raw"?: Json | null,"status"?: Database["public"]['Enums']["order_status"],"toss_order_id"?: string,"unit_price_krw"?: number
                   }
                   Relationships: [
                     {
@@ -82,13 +82,13 @@ isOneToOne: false
                   ]
                 },"payment_settings": {
                   Row: {
-                    "created_at": string,"photographer_id": string,"toss_client_key": string | null,"toss_secret_key_encrypted": string | null,"updated_at": string
+                    "bank_account": string | null,"bank_holder": string | null,"bank_name": string | null,"created_at": string,"photographer_id": string,"toss_client_key": string | null,"toss_secret_key_encrypted": string | null,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"photographer_id": string,"toss_client_key"?: string | null,"toss_secret_key_encrypted"?: string | null,"updated_at"?: string
+                    "bank_account"?: string | null,"bank_holder"?: string | null,"bank_name"?: string | null,"created_at"?: string,"photographer_id": string,"toss_client_key"?: string | null,"toss_secret_key_encrypted"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"photographer_id"?: string,"toss_client_key"?: string | null,"toss_secret_key_encrypted"?: string | null,"updated_at"?: string
+                    "bank_account"?: string | null,"bank_holder"?: string | null,"bank_name"?: string | null,"created_at"?: string,"photographer_id"?: string,"toss_client_key"?: string | null,"toss_secret_key_encrypted"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -217,7 +217,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "gallery_status": "draft"|"open"|"awaiting_payment"|"submitted"|"delivered"|"expired","notification_status": "queued"|"sent"|"failed","notification_type": "selection_submitted"|"retouch_delivered"|"expiry_warning","order_status": "pending"|"paid"|"failed"|"canceled","photo_processing_status": "pending"|"processing"|"ready"|"failed","pin_author": "client"|"photographer","retouch_match_status": "matched"|"unmatched"
+            "gallery_status": "draft"|"open"|"awaiting_payment"|"submitted"|"delivered"|"expired","notification_status": "queued"|"sent"|"failed","notification_type": "selection_submitted"|"retouch_delivered"|"expiry_warning","order_status": "pending"|"paid"|"failed"|"canceled","payment_method": "toss"|"manual","photo_processing_status": "pending"|"processing"|"ready"|"failed","pin_author": "client"|"photographer","retouch_match_status": "matched"|"unmatched"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -337,7 +337,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "gallery_status": ["draft", "open", "awaiting_payment", "submitted", "delivered", "expired"],"notification_status": ["queued", "sent", "failed"],"notification_type": ["selection_submitted", "retouch_delivered", "expiry_warning"],"order_status": ["pending", "paid", "failed", "canceled"],"photo_processing_status": ["pending", "processing", "ready", "failed"],"pin_author": ["client", "photographer"],"retouch_match_status": ["matched", "unmatched"]
+            "gallery_status": ["draft", "open", "awaiting_payment", "submitted", "delivered", "expired"],"notification_status": ["queued", "sent", "failed"],"notification_type": ["selection_submitted", "retouch_delivered", "expiry_warning"],"order_status": ["pending", "paid", "failed", "canceled"],"payment_method": ["toss", "manual"],"photo_processing_status": ["pending", "processing", "ready", "failed"],"pin_author": ["client", "photographer"],"retouch_match_status": ["matched", "unmatched"]
           }
         }
 } as const

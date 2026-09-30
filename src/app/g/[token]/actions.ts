@@ -6,6 +6,8 @@ import { z } from "zod";
 import type { FormState } from "@/components/form";
 import { getGalleryAccess, grantAccess, type SharedGallery } from "@/lib/gallery-access";
 import { verifyPassword } from "@/lib/password";
+import { cancelPendingOrders, createTossOrder, getPaymentOptions } from "@/lib/payments";
+import { siteUrl } from "@/lib/site";
 import { MAX_PIN_BODY, MAX_PINS_PER_PHOTO, extraCount, selectionLimit } from "@/lib/selection";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -137,8 +139,48 @@ export async function reopenForPayment(token: string): Promise<Result> {
     .select("id");
   if (!data?.length) return { ok: false, error: "지금은 다시 고를 수 없어요." };
 
+  await cancelPendingOrders(access.gallery.id);
   revalidatePath(`/g/${token}`);
   return { ok: true };
+}
+
+// ─── 추가 보정 결제 (토스 결제창) ───
+
+export type TossCheckout = {
+  clientKey: string;
+  orderId: string;
+  amount: number;
+  orderName: string;
+  customerName?: string;
+  successUrl: string;
+  failUrl: string;
+};
+
+export async function startTossPayment(token: string): Promise<Result<{ checkout: TossCheckout }>> {
+  const access = await getGalleryAccess(token);
+  if (access.state !== "ok") return { ok: false, error: "갤러리를 열 수 없어요." };
+  const { gallery } = access;
+  if (gallery.status !== "awaiting_payment") return { ok: false, error: "결제할 수 있는 상태가 아니에요." };
+
+  const options = await getPaymentOptions(gallery.photographer_id);
+  if (!options.toss) return { ok: false, error: "카드 결제를 받지 않는 작가님이에요. 계좌이체 안내를 확인해주세요." };
+
+  const res = await createTossOrder(gallery);
+  if ("error" in res) return { ok: false, error: res.error! };
+
+  const base = `${siteUrl()}/g/${token}/payment`;
+  return {
+    ok: true,
+    checkout: {
+      clientKey: options.toss.clientKey,
+      orderId: res.order.toss_order_id,
+      amount: res.order.amount_krw,
+      orderName: `${gallery.title} 추가 보정 ${res.order.extra_count}장`.slice(0, 100),
+      customerName: gallery.client_name ?? undefined,
+      successUrl: `${base}/success`,
+      failUrl: `${base}/fail`,
+    },
+  };
 }
 
 const pinSchema = z.object({

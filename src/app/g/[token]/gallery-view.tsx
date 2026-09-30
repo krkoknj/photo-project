@@ -9,10 +9,12 @@ import {
   addPin,
   reopenForPayment,
   removePin,
+  startTossPayment,
   submitSelection,
   toggleSelection,
   type SavedPin,
 } from "./actions";
+import { loadTossPayments } from "./toss-sdk";
 
 export type ClientPhoto = {
   id: string;
@@ -36,8 +38,10 @@ export function GalleryView({
   gallery,
   initialSelected,
   initialPins,
+  canPayByCard,
 }: {
   token: string;
+  canPayByCard: boolean;
   photos: ClientPhoto[];
   gallery: GalleryRules;
   initialSelected: string[];
@@ -139,6 +143,37 @@ export function GalleryView({
     router.refresh();
   }
 
+  // 서버가 주문(금액)을 만든 뒤 토스 결제창을 연다. 결제 결과는 successUrl/failUrl로 돌아온다.
+  async function payWithCard() {
+    setBusy(true);
+    const res = await startTossPayment(token);
+    if (!res.ok) {
+      setBusy(false);
+      setToast(res.error);
+      return;
+    }
+    const { checkout } = res;
+    try {
+      const TossPayments = await loadTossPayments();
+      await TossPayments(checkout.clientKey)
+        .payment({ customerKey: crypto.randomUUID() })
+        .requestPayment({
+          method: "CARD",
+          amount: { currency: "KRW", value: checkout.amount },
+          orderId: checkout.orderId,
+          orderName: checkout.orderName,
+          customerName: checkout.customerName,
+          successUrl: checkout.successUrl,
+          failUrl: checkout.failUrl,
+        });
+    } catch (e) {
+      const code = (e as { code?: string }).code;
+      if (code !== "USER_CANCEL") setToast("결제창을 열지 못했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
       <div className="mb-3 flex gap-2 px-4 sm:px-0">
@@ -217,6 +252,7 @@ export function GalleryView({
         busy={busy}
         onSubmit={submit}
         onReopen={reopen}
+        onPay={canPayByCard ? payWithCard : undefined}
       />
 
       {openIndex >= 0 && (
@@ -255,6 +291,7 @@ function SelectionBar({
   busy,
   onSubmit,
   onReopen,
+  onPay,
 }: {
   gallery: GalleryRules;
   count: number;
@@ -262,6 +299,7 @@ function SelectionBar({
   busy: boolean;
   onSubmit: () => void;
   onReopen: () => void;
+  onPay?: () => void;
 }) {
   const extra = extraCount(count, gallery);
   let summary: React.ReactNode;
@@ -298,20 +336,30 @@ function SelectionBar({
     summary = (
       <>
         <strong>추가 {extra}장 결제가 필요해요</strong>
-        <span className="block text-xs text-neutral-500">
-          {formatKrw(extraAmount(count, gallery))} · 결제 기능은 곧 열려요
-        </span>
+        <span className="block text-xs text-neutral-500">{formatKrw(extraAmount(count, gallery))}</span>
       </>
     );
     action = (
-      <button
-        type="button"
-        onClick={onReopen}
-        disabled={busy}
-        className="rounded-lg border border-black/15 px-4 py-2.5 text-sm font-medium disabled:opacity-40 dark:border-white/20"
-      >
-        다시 고르기
-      </button>
+      <div className="flex shrink-0 gap-2">
+        <button
+          type="button"
+          onClick={onReopen}
+          disabled={busy}
+          className="rounded-lg border border-black/15 px-3 py-2.5 text-sm font-medium disabled:opacity-40 dark:border-white/20"
+        >
+          다시 고르기
+        </button>
+        {onPay && (
+          <button
+            type="button"
+            onClick={onPay}
+            disabled={busy}
+            className="rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-black"
+          >
+            {busy ? "여는 중…" : "카드 결제"}
+          </button>
+        )}
+      </div>
     );
   } else {
     summary = (

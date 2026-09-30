@@ -20,6 +20,9 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
           <span className="hidden text-neutral-600 dark:text-neutral-400 sm:inline">
             {photographer?.display_name || photographer?.email}
           </span>
+          <Link href="/dashboard/settings" className="text-neutral-600 hover:underline dark:text-neutral-400">
+            결제 설정
+          </Link>
           <form action={logout}>
             <button type="submit" className="rounded-lg border border-black/15 px-3 py-1.5 dark:border-white/20">
               로그아웃

@@ -1,12 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": [
+    "icn1"
+  ],
   "crons": [
     {
       "path": "/api/cron/expire",
       "schedule": "0 18 * * *"
     }
-  ],
-  "regions": [
-    "icn1"
   ]
 }

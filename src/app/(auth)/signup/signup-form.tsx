@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { signup, type AuthFormState } from "../actions";
-import { Field, FormMessage, SubmitButton } from "../auth-ui";
+import { Field, FormMessage, SubmitButton } from "@/components/form";
 
 export function SignupForm() {
   const [state, formAction, pending] = useActionState<AuthFormState, FormData>(signup, {});

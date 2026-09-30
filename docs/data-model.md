@@ -40,3 +40,6 @@ photographers ─┬─< galleries ─┬─< photos ─┬─< retouch_pins
 - **R2 경로**: `galleries/{galleryId}/{originals|previews|thumbs|retouched}/{id}.{ext}`. 원본은 고객에게 노출하지 않는다.
 - **삭제**: 영구 삭제 대신 휴지통 처리한다. 갤러리는 `trashed_at`을 쓰고, 만료된 원본은 R2의 `trash/` 경로로 옮긴 뒤 수명 주기 규칙이 7일 후 삭제한다.
 - **금액**: 원화 정수(`*_krw`)로 저장한다. 서버에서 결제 승인 API로 검증한 뒤에만 `paid` 상태가 된다.
+- **고객 접근 조건** (4단계에서 구현): 공유 링크는 `status`가 `draft`나 `expired`가 아니고, `trashed_at`이 null이고, `expires_at`이 지나지 않았을 때만 연다.
+- **작가가 바꿀 수 있는 상태**: `draft ↔ open`만 직접 바꿀 수 있다. 나머지 상태는 고객의 제출, 결제, 보정본 전달, 만료 처리에 따라 바뀐다. 제출 이후에는 셀렉 장수와 가격을 서버에서 잠근다.
+- **공유 비밀번호**: scrypt로 해시해서 저장한다(`src/lib/password.ts`). 링크 재발급으로 `share_token`을 바꾸면 기존 링크는 무효가 된다.

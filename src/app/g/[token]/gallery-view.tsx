@@ -361,6 +361,13 @@ function SelectionBar({
         )}
       </div>
     );
+  } else if (gallery.status === "delivered") {
+    summary = (
+      <>
+        <strong>보정본이 도착했어요</strong>
+        <span className="block text-xs text-neutral-500">위에서 한 장씩 또는 전체를 받을 수 있어요.</span>
+      </>
+    );
   } else {
     summary = (
       <>

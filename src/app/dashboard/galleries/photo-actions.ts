@@ -74,7 +74,7 @@ export async function requestUploads(
       taken.add(key); // 같은 요청 안의 중복도 막는다
       const photoId = randomUUID();
       const url = await presignUpload(storageKeys.original(galleryId, photoId), file.type, file.size);
-      tickets.push({ name: file.name, photoId, url });
+      tickets.push({ name: file.name, id: photoId, url });
     }
   }
   return { tickets };

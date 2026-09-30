@@ -43,6 +43,14 @@ describe("renderPreviews", () => {
     expect(distinct.size).toBeGreaterThan(3); // 단색 원본이면 1~2개여야 함
   });
 
+  it("보정본(watermark: false)은 원본 픽셀을 그대로 줄인다", async () => {
+    const { preview } = await renderPreviews(await jpeg(1200, 800), { watermark: false });
+    const { data } = await sharp(preview).raw().toBuffer({ resolveWithObject: true });
+    const distinct = new Set<number>();
+    for (let i = 0; i < data.length; i += 3 * 97) distinct.add(data[i]);
+    expect(distinct.size).toBeLessThanOrEqual(3); // 단색 원본 그대로
+  });
+
   it("이미지가 아니면 에러를 던진다", async () => {
     await expect(renderPreviews(Buffer.from("not an image"))).rejects.toThrow();
   });

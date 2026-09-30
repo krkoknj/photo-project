@@ -30,6 +30,9 @@ export const storageKeys = {
   original: (galleryId: string, photoId: string) => `galleries/${galleryId}/originals/${photoId}`,
   preview: (galleryId: string, photoId: string) => `galleries/${galleryId}/previews/${photoId}.webp`,
   thumb: (galleryId: string, photoId: string) => `galleries/${galleryId}/thumbs/${photoId}.webp`,
+  retouched: (galleryId: string, fileId: string) => `galleries/${galleryId}/retouched/${fileId}`,
+  retouchedPreview: (galleryId: string, fileId: string) => `galleries/${galleryId}/retouched-previews/${fileId}.webp`,
+  retouchedThumb: (galleryId: string, fileId: string) => `galleries/${galleryId}/retouched-thumbs/${fileId}.webp`,
 };
 
 /** 브라우저가 저장소로 직접 올릴 수 있는 서명 URL. 타입·크기를 서명에 포함해 다른 파일로 바꿔치기 못하게 한다. */
@@ -43,6 +46,21 @@ export function presignUpload(key: string, contentType: string, contentLength: n
 
 export function presignView(key: string) {
   return getSignedUrl(s3, new GetObjectCommand({ Bucket: bucket, Key: key }), { expiresIn: VIEW_URL_TTL });
+}
+
+/** 저장 대화상자가 원래 파일명으로 뜨도록 Content-Disposition을 붙인 다운로드 URL */
+export function presignDownload(key: string, filename: string) {
+  // 구형 브라우저용 ASCII 대체 이름 (한글 등은 filename*에 UTF-8로 전달)
+  const ascii = filename.replace(/[^\x20-\x7e]|["\\]/g, "_");
+  return getSignedUrl(
+    s3,
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ResponseContentDisposition: `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+    }),
+    { expiresIn: VIEW_URL_TTL },
+  );
 }
 
 /** 객체가 없으면 null */

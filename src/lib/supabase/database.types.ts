@@ -25,13 +25,13 @@ export type Database = {
           Tables: {
             "galleries": {
                   Row: {
-                    "base_select_count": number,"client_email": string | null,"client_name": string | null,"created_at": string,"expires_at": string | null,"extra_price_krw": number,"id": string,"password_hash": string | null,"photographer_id": string,"share_token": string,"status": Database["public"]['Enums']["gallery_status"],"submitted_at": string | null,"title": string,"trashed_at": string | null,"updated_at": string
+                    "base_select_count": number,"client_email": string | null,"client_name": string | null,"created_at": string,"delivered_at": string | null,"expires_at": string | null,"extra_price_krw": number,"id": string,"password_hash": string | null,"photographer_id": string,"share_token": string,"status": Database["public"]['Enums']["gallery_status"],"submitted_at": string | null,"title": string,"trashed_at": string | null,"updated_at": string
                   }
                   Insert: {
-                    "base_select_count"?: number,"client_email"?: string | null,"client_name"?: string | null,"created_at"?: string,"expires_at"?: string | null,"extra_price_krw"?: number,"id"?: string,"password_hash"?: string | null,"photographer_id": string,"share_token"?: string,"status"?: Database["public"]['Enums']["gallery_status"],"submitted_at"?: string | null,"title": string,"trashed_at"?: string | null,"updated_at"?: string
+                    "base_select_count"?: number,"client_email"?: string | null,"client_name"?: string | null,"created_at"?: string,"delivered_at"?: string | null,"expires_at"?: string | null,"extra_price_krw"?: number,"id"?: string,"password_hash"?: string | null,"photographer_id": string,"share_token"?: string,"status"?: Database["public"]['Enums']["gallery_status"],"submitted_at"?: string | null,"title": string,"trashed_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "base_select_count"?: number,"client_email"?: string | null,"client_name"?: string | null,"created_at"?: string,"expires_at"?: string | null,"extra_price_krw"?: number,"id"?: string,"password_hash"?: string | null,"photographer_id"?: string,"share_token"?: string,"status"?: Database["public"]['Enums']["gallery_status"],"submitted_at"?: string | null,"title"?: string,"trashed_at"?: string | null,"updated_at"?: string
+                    "base_select_count"?: number,"client_email"?: string | null,"client_name"?: string | null,"created_at"?: string,"delivered_at"?: string | null,"expires_at"?: string | null,"extra_price_krw"?: number,"id"?: string,"password_hash"?: string | null,"photographer_id"?: string,"share_token"?: string,"status"?: Database["public"]['Enums']["gallery_status"],"submitted_at"?: string | null,"title"?: string,"trashed_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -158,13 +158,13 @@ isOneToOne: false
                   ]
                 },"retouched_files": {
                   Row: {
-                    "created_at": string,"file_key": string,"filename": string,"gallery_id": string,"id": string,"match_status": Database["public"]['Enums']["retouch_match_status"],"photo_id": string | null,"size_bytes": number | null
+                    "created_at": string,"file_key": string,"filename": string,"gallery_id": string,"height": number | null,"id": string,"match_status": Database["public"]['Enums']["retouch_match_status"],"photo_id": string | null,"preview_key": string | null,"processing_status": Database["public"]['Enums']["photo_processing_status"],"size_bytes": number | null,"thumb_key": string | null,"width": number | null
                   }
                   Insert: {
-                    "created_at"?: string,"file_key": string,"filename": string,"gallery_id": string,"id"?: string,"match_status": Database["public"]['Enums']["retouch_match_status"],"photo_id"?: string | null,"size_bytes"?: number | null
+                    "created_at"?: string,"file_key": string,"filename": string,"gallery_id": string,"height"?: number | null,"id"?: string,"match_status": Database["public"]['Enums']["retouch_match_status"],"photo_id"?: string | null,"preview_key"?: string | null,"processing_status"?: Database["public"]['Enums']["photo_processing_status"],"size_bytes"?: number | null,"thumb_key"?: string | null,"width"?: number | null
                   }
                   Update: {
-                    "created_at"?: string,"file_key"?: string,"filename"?: string,"gallery_id"?: string,"id"?: string,"match_status"?: Database["public"]['Enums']["retouch_match_status"],"photo_id"?: string | null,"size_bytes"?: number | null
+                    "created_at"?: string,"file_key"?: string,"filename"?: string,"gallery_id"?: string,"height"?: number | null,"id"?: string,"match_status"?: Database["public"]['Enums']["retouch_match_status"],"photo_id"?: string | null,"preview_key"?: string | null,"processing_status"?: Database["public"]['Enums']["photo_processing_status"],"size_bytes"?: number | null,"thumb_key"?: string | null,"width"?: number | null
                   }
                   Relationships: [
                     {

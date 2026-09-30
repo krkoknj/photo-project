@@ -51,3 +51,8 @@ photographers ─┬─< galleries ─┬─< photos ─┬─< retouch_pins
   - 주문(`orders`)은 `method`가 `toss`(결제창)나 `manual`(계좌이체 후 작가 확인)이다.
   - 셀렉을 다시 열면 `pending` 주문은 `canceled`가 된다. 결제된(`paid`) 주문이 있으면 셀렉을 다시 열 수 없다.
 - **작가 결제 설정** (`payment_settings`): 토스 시크릿 키는 AES-256-GCM으로 암호화해 저장한다(`PAYMENT_SECRET_KEY`). 저장할 때 토스 API로 키가 유효한지 확인한다. 계좌 정보는 고객에게 계좌이체를 안내하는 데 쓴다.
+- **보정본 전달** (`retouched_files`):
+  - 파일명의 `match_key`로 원본과 자동 연결한다. 실패하면 `unmatched`로 두고 작가가 직접 연결한다.
+  - 사진 한 장에는 보정본이 하나만 연결된다(부분 unique 인덱스). 같은 사진에 다시 올리면 이전 파일은 `trash/`로 옮기고 교체한다.
+  - 고객에게는 워터마크 없는 미리보기·썸네일을 보여주고, 다운로드는 원래 파일명이 붙은 서명 URL로 한다. 전체 ZIP은 브라우저에서 묶는다(`client-zip`).
+  - 작가가 "고객에게 전달"을 누르면 `status = delivered`, `delivered_at`을 기록한다. 전달 후에 올린 보정본도 고객에게 바로 보인다.

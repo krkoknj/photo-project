@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buttonClass } from "@/components/form";
 import { completeUpload, requestUploads } from "../photo-actions";
+import { completeRetouchUpload, requestRetouchUploads } from "../retouch-actions";
 import { ALLOWED_PHOTO_TYPES, MAX_UPLOAD_BATCH, UPLOAD_CONCURRENCY } from "../photo-upload-rules";
 
 type Failure = { name: string; reason: string };
@@ -31,7 +32,22 @@ async function runPool<T>(items: T[], limit: number, worker: (item: T) => Promis
   );
 }
 
-export function PhotoUploader({ galleryId, disabledReason }: { galleryId: string; disabledReason?: string }) {
+// 원본과 보정본은 같은 업로드 흐름을 쓰고 서버 액션만 다르다.
+const ACTIONS = {
+  original: { request: requestUploads, complete: completeUpload, label: "원본 사진" },
+  retouched: { request: requestRetouchUploads, complete: completeRetouchUpload, label: "보정본" },
+};
+
+export function PhotoUploader({
+  galleryId,
+  disabledReason,
+  kind = "original",
+}: {
+  galleryId: string;
+  disabledReason?: string;
+  kind?: keyof typeof ACTIONS;
+}) {
+  const actions = ACTIONS[kind];
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
@@ -60,7 +76,7 @@ export function PhotoUploader({ galleryId, disabledReason }: { galleryId: string
 
     for (let i = 0; i < files.length; i += MAX_UPLOAD_BATCH) {
       const batch = files.slice(i, i + MAX_UPLOAD_BATCH);
-      const res = await requestUploads(
+      const res = await actions.request(
         galleryId,
         batch.map((f) => ({ name: f.name, size: f.size, type: f.type })),
       );
@@ -81,7 +97,7 @@ export function PhotoUploader({ galleryId, disabledReason }: { galleryId: string
             sentByFile.set(file, sent);
             publish();
           });
-          const done = await completeUpload(galleryId, ticket.photoId, file.name);
+          const done = await actions.complete(galleryId, ticket.id, file.name);
           if ("error" in done) throw new Error(done.error);
         } catch (e) {
           const message = e instanceof Error ? e.message : "";
@@ -137,7 +153,7 @@ export function PhotoUploader({ galleryId, disabledReason }: { galleryId: string
         ) : (
           <>
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              원본 사진을 여기로 끌어다 놓거나
+              {actions.label}을 여기로 끌어다 놓거나
             </p>
             <button type="button" onClick={() => inputRef.current?.click()} className={buttonClass("primary", "text-sm")}>
               파일 선택

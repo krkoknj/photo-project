@@ -25,6 +25,7 @@ import { StatusBadge } from "../../status-badge";
 import { PasswordForm } from "./password-form";
 import { PhotoGrid, type GridPhoto } from "./photo-grid";
 import { PhotoUploader } from "./photo-uploader";
+import { RetouchPanel, type RetouchedItem } from "./retouch-panel";
 import { CopyFilenamesButton, SelectionResults, type SelectedPhoto } from "./selection-results";
 import { ConfirmSubmitButton, CopyLinkButton } from "./share-link";
 
@@ -102,7 +103,8 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
   const extraSelected = selectedPhotos.filter((p) => p.isExtra).length;
   const extraDue = extraAmount(selectedPhotos.length, gallery);
 
-  const [{ data: paidOrders }, paymentOptions] = await Promise.all([
+  const canDeliver = gallery.status === "submitted" || gallery.status === "delivered";
+  const [{ data: paidOrders }, paymentOptions, { data: retouchedRows }] = await Promise.all([
     supabase
       .from("orders")
       .select("id, method, extra_count, amount_krw, paid_at")
@@ -110,7 +112,23 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
       .eq("status", "paid")
       .order("paid_at"),
     getPaymentOptions(userId),
+    canDeliver
+      ? supabase
+          .from("retouched_files")
+          .select("id, filename, photo_id, processing_status, thumb_key")
+          .eq("gallery_id", gallery.id)
+          .order("filename")
+      : Promise.resolve({ data: [] as never[] }),
   ]);
+  const retouched: RetouchedItem[] = await Promise.all(
+    (retouchedRows ?? []).map(async (r) => ({
+      id: r.id,
+      filename: r.filename,
+      photoId: r.photo_id,
+      status: r.processing_status,
+      thumbUrl: r.thumb_key ? await presignView(r.thumb_key) : null,
+    })),
+  );
   const noPaymentMethod = gallery.extra_price_krw > 0 && !paymentOptions.toss && !paymentOptions.bank;
 
   const url = shareUrl(siteUrl(), gallery.share_token);
@@ -189,6 +207,23 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
             </ul>
           )}
           <SelectionResults photos={selectedPhotos} />
+        </Section>
+      )}
+
+      {canDeliver && !gallery.trashed_at && (
+        <Section
+          title="보정본 전달"
+          description="보정본 파일명이 원본과 같으면(예: IMG_1234-edit.jpg → IMG_1234) 자동으로 연결돼요. 고객은 워터마크 없이 원본 화질로 받아요."
+        >
+          <div className="space-y-5">
+            <PhotoUploader galleryId={gallery.id} kind="retouched" />
+            <RetouchPanel
+              galleryId={gallery.id}
+              delivered={gallery.status === "delivered"}
+              files={retouched}
+              photos={(photoRows ?? []).map((p) => ({ id: p.id, filename: p.filename, selected: selectedById.has(p.id) }))}
+            />
+          </div>
         </Section>
       )}
 

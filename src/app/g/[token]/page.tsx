@@ -3,9 +3,10 @@ import { formatDateKst, formatKrw } from "@/lib/gallery";
 import { getGalleryAccess, type SharedGallery } from "@/lib/gallery-access";
 import { getPaymentOptions } from "@/lib/payments";
 import { extraAmount } from "@/lib/selection";
-import { presignView } from "@/lib/storage";
+import { presignDownload, presignView } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { unlockGallery, type SavedPin } from "./actions";
+import { DeliveredView, type DeliveredPhoto } from "./delivered-view";
 import { GalleryView, type ClientPhoto } from "./gallery-view";
 import { PasswordGate } from "./password-gate";
 
@@ -75,6 +76,29 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
     getPaymentOptions(gallery.photographer_id),
   ]);
   const awaitingPayment = gallery.status === "awaiting_payment";
+
+  // 전달된 보정본: 원본과 연결되고 처리가 끝난 것만. 다운로드는 원래 파일명으로 저장되게 한다.
+  let delivered: DeliveredPhoto[] = [];
+  if (gallery.status === "delivered") {
+    const { data: files } = await admin
+      .from("retouched_files")
+      .select("id, filename, photo_id, file_key, thumb_key, preview_key")
+      .eq("gallery_id", gallery.id)
+      .eq("match_status", "matched")
+      .eq("processing_status", "ready");
+    // 원본 순서(파일명)대로 보여준다.
+    const order = new Map((rows ?? []).map((p, i) => [p.id, i]));
+    const sorted = (files ?? []).sort((a, b) => (order.get(a.photo_id!) ?? 0) - (order.get(b.photo_id!) ?? 0));
+    delivered = await Promise.all(
+      sorted.map(async (f) => ({
+        id: f.id,
+        filename: f.filename,
+        thumbUrl: await presignView(f.thumb_key!),
+        previewUrl: await presignView(f.preview_key!),
+        downloadUrl: await presignDownload(f.file_key, f.filename),
+      })),
+    );
+  }
   const extraDue = extraAmount(selections?.length ?? 0, gallery);
   const pins: SavedPin[] = (pinRows ?? []).map((p) => ({
     id: p.id,
@@ -133,7 +157,7 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
             {!paymentOptions.toss && !paymentOptions.bank && <p>결제 방법은 작가님께 문의해주세요.</p>}
           </div>
         )}
-        {gallery.base_select_count > 0 && (
+        {gallery.base_select_count > 0 && (gallery.status === "open" || awaitingPayment) && (
           <p className="mt-4 rounded-xl bg-black/[.04] px-4 py-3 text-sm dark:bg-white/[.06]">
             보정 {gallery.base_select_count}장이 포함되어 있어요.
             {gallery.extra_price_krw > 0 && ` 더 고르시면 장당 ${formatKrw(gallery.extra_price_krw)}이 추가돼요.`}
@@ -142,6 +166,19 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
       </header>
 
       <main className="flex-1 pb-12 sm:px-6">
+        {delivered.length > 0 && (
+          <section className="mb-10">
+            <h2 className="mb-1 px-4 text-lg font-semibold sm:px-0">보정본 {delivered.length}장이 도착했어요</h2>
+            {gallery.delivered_at && (
+              <p className="mb-3 px-4 text-sm text-neutral-500 sm:px-0">
+                {formatDateKst(gallery.delivered_at)} 전달
+                {gallery.expires_at && ` · ${formatDateKst(gallery.expires_at)}까지 받을 수 있어요`}
+              </p>
+            )}
+            <DeliveredView photos={delivered} zipName={`${gallery.title} 보정본.zip`} />
+            <h2 className="mt-10 mb-3 px-4 text-lg font-semibold sm:px-0">고른 사진 (원본 미리보기)</h2>
+          </section>
+        )}
         {photos.length ? (
           <GalleryView
             token={token}

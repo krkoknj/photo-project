@@ -28,7 +28,7 @@ function watermarkSvg(width: number, height: number) {
 </svg>`);
 }
 
-export async function renderPreviews(original: Buffer) {
+export async function renderPreviews(original: Buffer, { watermark = true }: { watermark?: boolean } = {}) {
   const meta = await sharp(original).metadata();
   // EXIF 회전을 반영한 실제 가로·세로
   const { width, height } = meta.autoOrient;
@@ -39,7 +39,7 @@ export async function renderPreviews(original: Buffer) {
     .toBuffer({ resolveWithObject: true });
 
   const preview = await sharp(resized)
-    .composite([{ input: watermarkSvg(info.width, info.height) }])
+    .composite(watermark ? [{ input: watermarkSvg(info.width, info.height) }] : [])
     .webp({ quality: 80 })
     .toBuffer();
 
@@ -70,5 +70,28 @@ export async function processPhoto(photo: { id: string; gallery_id: string; orig
   } catch (error) {
     console.error(`[processPhoto] ${photo.id} 처리 실패`, error);
     await admin.from("photos").update({ processing_status: "failed" }).eq("id", photo.id);
+  }
+}
+
+// 보정본은 고객에게 전달하는 결과물이라 워터마크 없이 미리보기·썸네일만 만든다.
+export async function processRetouched(file: { id: string; gallery_id: string; file_key: string }) {
+  const admin = createAdminClient();
+  await admin.from("retouched_files").update({ processing_status: "processing" }).eq("id", file.id);
+
+  try {
+    const original = await getObjectBytes(file.file_key);
+    const { preview, thumb, width, height } = await renderPreviews(original, { watermark: false });
+
+    const previewKey = storageKeys.retouchedPreview(file.gallery_id, file.id);
+    const thumbKey = storageKeys.retouchedThumb(file.gallery_id, file.id);
+    await Promise.all([putObject(previewKey, preview, "image/webp"), putObject(thumbKey, thumb, "image/webp")]);
+
+    await admin
+      .from("retouched_files")
+      .update({ preview_key: previewKey, thumb_key: thumbKey, width, height, processing_status: "ready" })
+      .eq("id", file.id);
+  } catch (error) {
+    console.error(`[processRetouched] ${file.id} 처리 실패`, error);
+    await admin.from("retouched_files").update({ processing_status: "failed" }).eq("id", file.id);
   }
 }

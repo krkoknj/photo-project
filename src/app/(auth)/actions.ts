@@ -65,12 +65,18 @@ export async function signup(_prev: AuthFormState, formData: FormData): Promise<
   });
 
   if (error) {
+    // 원인 파악용 (이메일 등 개인정보는 남기지 않는다)
+    console.warn(`[signup] 실패: ${error.code ?? "unknown"} (${error.status ?? "-"}) ${error.message}`);
     const message =
-      error.code === "user_already_exists"
+      error.code === "user_already_exists" || error.code === "email_exists"
         ? "이미 가입된 이메일입니다."
         : error.code === "weak_password"
           ? "더 안전한 비밀번호를 사용해주세요."
-          : "가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+          : error.code === "email_address_invalid"
+            ? "사용할 수 없는 이메일 주소예요. 실제로 받을 수 있는 주소를 입력해주세요."
+            : error.code === "over_email_send_rate_limit"
+              ? "인증 메일을 너무 많이 보냈어요. 잠시 후 다시 시도해주세요."
+              : "가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
     return { error: message, fields };
   }
 

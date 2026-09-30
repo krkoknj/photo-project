@@ -9,6 +9,7 @@ import { getPaymentOptions } from "@/lib/payments";
 import { extraAmount } from "@/lib/selection";
 import { siteUrl } from "@/lib/site";
 import { presignView } from "@/lib/storage";
+import type { Enums } from "@/lib/supabase/database.types";
 import {
   confirmManualPayment,
   regenerateShareToken,
@@ -30,6 +31,12 @@ import { CopyFilenamesButton, SelectionResults, type SelectedPhoto } from "./sel
 import { ConfirmSubmitButton, CopyLinkButton } from "./share-link";
 
 export const metadata: Metadata = { title: "갤러리 설정" };
+
+const NOTIFICATION_LABEL: Record<Enums<"notification_type">, string> = {
+  selection_submitted: "셀렉 제출·결제 알림 (작가)",
+  retouch_delivered: "보정본 도착 알림 (고객)",
+  expiry_warning: "만료 예정 알림 (고객)",
+};
 
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
@@ -104,7 +111,7 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
   const extraDue = extraAmount(selectedPhotos.length, gallery);
 
   const canDeliver = gallery.status === "submitted" || gallery.status === "delivered";
-  const [{ data: paidOrders }, paymentOptions, { data: retouchedRows }] = await Promise.all([
+  const [{ data: paidOrders }, paymentOptions, { data: retouchedRows }, { data: notifications }] = await Promise.all([
     supabase
       .from("orders")
       .select("id, method, extra_count, amount_krw, paid_at")
@@ -119,6 +126,12 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
           .eq("gallery_id", gallery.id)
           .order("filename")
       : Promise.resolve({ data: [] as never[] }),
+    supabase
+      .from("notifications")
+      .select("id, type, recipient, status, created_at")
+      .eq("gallery_id", gallery.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
   ]);
   const retouched: RetouchedItem[] = await Promise.all(
     (retouchedRows ?? []).map(async (r) => ({
@@ -217,6 +230,11 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
         >
           <div className="space-y-5">
             <PhotoUploader galleryId={gallery.id} kind="retouched" />
+            {!gallery.client_email && (
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                고객 이메일이 없어서 보정본 도착 메일을 보내지 않아요. 아래 갤러리 설정에서 추가할 수 있어요.
+              </p>
+            )}
             <RetouchPanel
               galleryId={gallery.id}
               delivered={gallery.status === "delivered"}
@@ -329,6 +347,24 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
           <PhotoGrid galleryId={gallery.id} photos={photos} editable={!locked && !gallery.trashed_at} />
         </div>
       </Section>
+
+      {!!notifications?.length && (
+        <Section title="알림 기록" description="최근 10건">
+          <ul className="space-y-1.5 text-sm">
+            {notifications.map((n) => (
+              <li key={n.id} className="flex flex-wrap items-center gap-x-2">
+                <span className={n.status === "failed" ? "text-red-600 dark:text-red-400" : n.status === "sent" ? "text-green-700 dark:text-green-400" : "text-neutral-500"}>
+                  {n.status === "sent" ? "보냄" : n.status === "failed" ? "실패" : "대기"}
+                </span>
+                <span>{NOTIFICATION_LABEL[n.type]}</span>
+                <span className="text-neutral-500">
+                  → {n.recipient} · {formatDateKst(n.created_at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       {!gallery.trashed_at && (
         <Section title="휴지통으로 이동" description="고객 링크가 닫혀요. 휴지통에서 언제든 복원할 수 있어요.">

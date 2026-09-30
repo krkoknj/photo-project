@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import type { FormState } from "@/components/form";
 import { getGalleryAccess, grantAccess, type SharedGallery } from "@/lib/gallery-access";
+import { notifySelectionSubmitted } from "@/lib/notifications";
 import { verifyPassword } from "@/lib/password";
 import { cancelPendingOrders, createTossOrder, getPaymentOptions } from "@/lib/payments";
 import { siteUrl } from "@/lib/site";
@@ -122,6 +124,7 @@ export async function submitSelection(token: string): Promise<Result<{ status: "
     .select("id");
   if (!updated?.length) return { ok: false, error: CLOSED };
 
+  after(() => notifySelectionSubmitted(gallery.id, status === "awaiting_payment"));
   revalidatePath(`/g/${token}`);
   return { ok: true, status };
 }

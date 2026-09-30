@@ -15,7 +15,7 @@ npm run dev
 
 - 앱: http://localhost:3000
 - Supabase Studio (DB 관리 화면): http://127.0.0.1:54323
-- 메일 확인 (Mailpit): http://127.0.0.1:54324
+- 메일 확인 (Mailpit): http://127.0.0.1:54324 (가입 인증 메일, 알림 메일)
 - 테스트 작가 계정은 `supabase/seed.sql` 참고
 
 ## 자주 쓰는 명령
@@ -27,3 +27,5 @@ npm run dev
 | `npx supabase gen types typescript --local > src/lib/supabase/database.types.ts` | DB 타입 재생성 |
 | `npx supabase stop` | 로컬 Supabase 종료 |
 | `npm test` | 단위 테스트 (vitest) |
+
+로컬 알림 메일은 Mailpit(http://127.0.0.1:54324)에서 확인한다.

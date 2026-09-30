@@ -75,7 +75,7 @@ export async function createTossOrder(gallery: SharedGallery) {
   return { order } as const;
 }
 
-export type ConfirmOutcome = { ok: true } | { ok: false; message: string };
+export type ConfirmOutcome = { ok: true; newlyPaid: boolean; amount: number } | { ok: false; message: string };
 
 /** 토스 결제창 인증 성공 후 서버 승인 */
 export async function confirmTossOrder(
@@ -92,7 +92,7 @@ export async function confirmTossOrder(
     .maybeSingle();
 
   if (!order) return { ok: false, message: "주문을 찾을 수 없어요." };
-  if (order.status === "paid") return { ok: true }; // 새로고침 등으로 다시 들어온 경우
+  if (order.status === "paid") return { ok: true, newlyPaid: false, amount: order.amount_krw }; // 새로고침 등으로 다시 들어온 경우
   if (order.status !== "pending") return { ok: false, message: "취소되었거나 만료된 주문이에요. 다시 결제해주세요." };
 
   const fail = async (message: string, raw?: unknown) => {
@@ -126,7 +126,7 @@ export async function confirmTossOrder(
     .update({ status: "submitted", submitted_at: new Date().toISOString() })
     .eq("id", gallery.id)
     .eq("status", "awaiting_payment");
-  return { ok: true };
+  return { ok: true, newlyPaid: true, amount: order.amount_krw };
 }
 
 /** 토스 결제창에서 취소·실패로 돌아온 경우 */

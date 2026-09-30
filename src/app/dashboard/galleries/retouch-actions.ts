@@ -7,6 +7,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { processRetouched } from "@/lib/image-processing";
 import { matchKey } from "@/lib/match-key";
+import { notifyRetouchDelivered } from "@/lib/notifications";
 import { headObject, moveToTrash, presignUpload, storageKeys } from "@/lib/storage";
 import { ALLOWED_PHOTO_TYPES, MAX_PHOTO_BYTES, MAX_UPLOAD_BATCH, type UploadTicket } from "./photo-upload-rules";
 
@@ -190,11 +191,13 @@ export async function deliverGallery(galleryId: string): Promise<{ ok: true } | 
     .eq("processing_status", "ready");
   if (!count) return { error: "전달할 보정본이 없어요." };
 
-  await supabase
+  const { data: delivered } = await supabase
     .from("galleries")
     .update({ status: "delivered", delivered_at: new Date().toISOString() })
     .eq("id", galleryId)
-    .eq("status", "submitted");
+    .eq("status", "submitted")
+    .select("id");
+  if (delivered?.length) after(() => notifyRetouchDelivered(galleryId));
   refresh(galleryId);
   revalidatePath("/dashboard");
   return { ok: true };

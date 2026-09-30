@@ -61,15 +61,15 @@ export function RetouchPanel({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 rounded-xl bg-black/[.03] p-4 text-sm sm:flex-row sm:items-center sm:justify-between dark:bg-white/[.04]">
+      <div className="flex flex-col gap-3 bg-panel p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="font-medium">
             고른 사진 {selected.length}장 중 {selected.length - missing.length}장 보정본 준비
             {matched.length > selected.length - missing.length &&
               ` (+ 고르지 않은 사진 ${matched.length - (selected.length - missing.length)}장)`}
           </p>
-          {processing > 0 && <p className="text-neutral-500">미리보기 만드는 중… {processing}장</p>}
-          {delivered && <p className="text-green-700 dark:text-green-400">전달됨 · 새로 올린 보정본도 바로 고객에게 보여요.</p>}
+          {processing > 0 && <p className="text-muted">미리보기 만드는 중… {processing}장</p>}
+          {delivered && <p className="text-ok">전달됨 · 새로 올린 보정본도 바로 고객에게 보여요.</p>}
         </div>
         {!delivered && (
           <button type="button" onClick={deliver} disabled={busy || matched.length === 0} className={buttonClass("primary", "shrink-0 text-sm")}>
@@ -80,10 +80,10 @@ export function RetouchPanel({
       {message && (
         <p
           role={message.tone === "error" ? "alert" : "status"}
-          className={`rounded-lg px-3 py-2 text-sm ${
+          className={`rounded-sm px-3 py-2 text-sm ${
             message.tone === "error"
-              ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
-              : "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-300"
+              ? "border border-danger/40 bg-danger/10 text-danger"
+              : "border border-ok/40 bg-ok/10 text-ok"
           }`}
         >
           {message.text}
@@ -92,10 +92,10 @@ export function RetouchPanel({
 
       {missing.length > 0 && (
         <details className="text-sm">
-          <summary className="cursor-pointer text-neutral-600 dark:text-neutral-400">
+          <summary className="cursor-pointer text-muted">
             아직 보정본이 없는 사진 {missing.length}장
           </summary>
-          <p className="mt-2 break-words text-neutral-500">
+          <p className="mt-2 break-words text-muted">
             {missing.map((p) => p.filename.replace(/\.[^.]+$/, "")).join(", ")}
           </p>
         </details>
@@ -103,7 +103,7 @@ export function RetouchPanel({
 
       {unmatched.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-amber-700 dark:text-amber-400">
+          <h3 className="text-sm font-medium text-accent">
             원본을 찾지 못한 보정본 {unmatched.length}장 · 어느 사진인지 골라주세요
           </h3>
           <ul className="space-y-2">
@@ -117,7 +117,7 @@ export function RetouchPanel({
       {matched.length > 0 && (
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
           {matched.map((file) => (
-            <li key={file.id} className="group relative aspect-square overflow-hidden rounded-lg bg-black/5 dark:bg-white/5">
+            <li key={file.id} className="group relative aspect-square overflow-hidden rounded-sm bg-panel">
               <Thumb file={file} galleryId={galleryId} />
               <p className="absolute inset-x-0 bottom-0 truncate bg-black/60 px-1.5 py-0.5 text-[11px] text-white">
                 {photoById.get(file.photoId!)?.filename ?? file.filename}
@@ -151,10 +151,10 @@ function Thumb({ file, galleryId }: { file: RetouchedItem; galleryId: string }) 
     return <img src={file.thumbUrl} alt={file.filename} loading="lazy" className="h-full w-full object-cover" />;
   }
   return (
-    <div className="flex h-full items-center justify-center p-2 text-center text-xs text-neutral-500">
+    <div className="flex h-full items-center justify-center p-2 text-center text-xs text-muted">
       {file.status === "failed" ? (
         <form action={retryRetouched.bind(null, galleryId, file.id)}>
-          <p className="mb-1 text-red-600 dark:text-red-400">처리 실패</p>
+          <p className="mb-1 text-danger">처리 실패</p>
           <button type="submit" className="underline">
             다시 시도
           </button>
@@ -172,9 +172,9 @@ function UnmatchedRow({ galleryId, file, photos }: { galleryId: string; file: Re
   const ordered = [...photos].sort((a, b) => Number(b.selected) - Number(a.selected));
 
   return (
-    <li className="flex flex-col gap-2 rounded-lg border border-amber-300 p-2 sm:flex-row sm:items-center dark:border-amber-800">
+    <li className="flex flex-col gap-2 rounded-sm border border-accent/40 p-2 sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-black/5 dark:bg-white/5">
+        <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-panel">
           <Thumb file={file} galleryId={galleryId} />
         </div>
         <span className="truncate text-sm">{file.filename}</span>
@@ -184,7 +184,7 @@ function UnmatchedRow({ galleryId, file, photos }: { galleryId: string; file: Re
           value={photoId}
           onChange={(e) => setPhotoId(e.target.value)}
           aria-label={`${file.filename}의 원본`}
-          className="min-w-0 flex-1 rounded-lg border border-black/15 bg-transparent px-2 py-2 text-sm sm:w-48 dark:border-white/20"
+          className="min-w-0 flex-1 rounded-sm border border-line-strong bg-transparent px-2 py-2 text-sm sm:w-48"
         >
           <option value="">원본 선택…</option>
           {ordered.map((p) => (

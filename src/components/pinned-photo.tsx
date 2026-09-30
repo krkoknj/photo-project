@@ -52,8 +52,8 @@ function PinMarker({ x, y, label, active, draft }: { x: number; y: number; label
   return (
     <span
       style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
-      className={`pointer-events-none absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white text-xs font-bold shadow-md ${
-        draft ? "animate-pulse bg-amber-500 text-white" : active ? "bg-amber-500 text-white" : "bg-black/70 text-white"
+      className={`pointer-events-none absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-fg/80 font-mono text-[11px] shadow-[0_0_0_3px_rgb(0_0_0/0.25)] ${
+        draft ? "animate-pulse bg-accent text-ink" : active ? "bg-accent text-ink" : "bg-ink/80 text-fg"
       }`}
     >
       {label}

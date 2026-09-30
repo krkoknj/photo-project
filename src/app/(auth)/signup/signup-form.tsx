@@ -9,7 +9,7 @@ export function SignupForm() {
   const [state, formAction, pending] = useActionState<AuthFormState, FormData>(signup, {});
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-6">
       <Field
         label="이름 (고객에게 표시)"
         name="displayName"
@@ -35,9 +35,9 @@ export function SignupForm() {
       />
       <FormMessage error={state.error} message={state.message} />
       <SubmitButton pending={pending}>가입하기</SubmitButton>
-      <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+      <p className="pt-2 text-sm text-muted">
         이미 계정이 있으신가요?{" "}
-        <Link href="/login" className="font-medium text-black underline dark:text-white">
+        <Link href="/login" className="font-medium text-fg underline decoration-accent underline-offset-4">
           로그인
         </Link>
       </p>

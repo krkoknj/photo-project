@@ -46,8 +46,8 @@ export function SelectionResults({ photos }: { photos: SelectedPhoto[] }) {
   return (
     <ul className="grid items-start gap-4 sm:grid-cols-2">
       {photos.map((photo) => (
-        <li key={photo.id} className="overflow-hidden rounded-xl border border-black/10 dark:border-white/10">
-          <div className="bg-black">
+        <li key={photo.id} className="overflow-hidden border border-line">
+          <div className="bg-ink">
             {photo.previewUrl ? (
               <PinnedPhoto
                 src={photo.previewUrl}
@@ -64,7 +64,7 @@ export function SelectionResults({ photos }: { photos: SelectedPhoto[] }) {
             <div className="flex items-center justify-between gap-2">
               <span className="truncate font-medium">{photo.filename}</span>
               {photo.isExtra && (
-                <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                <span className="shrink-0 rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs text-accent">
                   추가
                 </span>
               )}
@@ -78,7 +78,7 @@ export function SelectionResults({ photos }: { photos: SelectedPhoto[] }) {
                     onMouseLeave={() => setActivePin(null)}
                     className="flex gap-2"
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-black/80 text-[11px] font-bold text-white dark:bg-white/80 dark:text-black">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-ink">
                       {i + 1}
                     </span>
                     <span className="min-w-0 break-words">{pin.body}</span>
@@ -86,7 +86,7 @@ export function SelectionResults({ photos }: { photos: SelectedPhoto[] }) {
                 ))}
               </ol>
             ) : (
-              <p className="text-neutral-500">보정 요청 없음</p>
+              <p className="text-muted">보정 요청 없음</p>
             )}
           </div>
         </li>

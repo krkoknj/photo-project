@@ -118,7 +118,7 @@ export function PhotoUploader({
   }
 
   if (disabledReason) {
-    return <p className="text-sm text-neutral-500">{disabledReason}</p>;
+    return <p className="text-sm text-muted">{disabledReason}</p>;
   }
 
   const percent = progress ? Math.round((progress.bytesSent / Math.max(progress.bytesTotal, 1)) * 100) : 0;
@@ -136,8 +136,8 @@ export function PhotoUploader({
           setDragging(false);
           upload(e.dataTransfer.files);
         }}
-        className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors ${
-          dragging ? "border-black bg-black/[.03] dark:border-white dark:bg-white/[.04]" : "border-black/20 dark:border-white/20"
+        className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed px-4 py-8 text-center transition-colors ${
+          dragging ? "border-accent bg-accent/5" : "border-line-strong"
         }`}
       >
         {progress ? (
@@ -145,20 +145,20 @@ export function PhotoUploader({
             <p className="text-sm font-medium">
               업로드 중… {progress.done}/{progress.total}장 ({percent}%)
             </p>
-            <div className="h-2 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
-              <div className="h-full bg-black transition-[width] dark:bg-white" style={{ width: `${percent}%` }} />
+            <div className="h-2 overflow-hidden rounded-full bg-line">
+              <div className="h-full bg-accent transition-[width]" style={{ width: `${percent}%` }} />
             </div>
-            <p className="text-xs text-neutral-500">업로드가 끝날 때까지 이 페이지를 닫지 마세요.</p>
+            <p className="text-xs text-muted">업로드가 끝날 때까지 이 페이지를 닫지 마세요.</p>
           </div>
         ) : (
           <>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-muted">
               {actions.label}을 여기로 끌어다 놓거나
             </p>
             <button type="button" onClick={() => inputRef.current?.click()} className={buttonClass("primary", "text-sm")}>
               파일 선택
             </button>
-            <p className="text-xs text-neutral-500">JPG, PNG, WebP · 장당 50MB 이하</p>
+            <p className="text-xs text-muted">JPG, PNG, WebP · 장당 50MB 이하</p>
           </>
         )}
         <input
@@ -175,7 +175,7 @@ export function PhotoUploader({
       </div>
 
       {failures.length > 0 && (
-        <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <div role="alert" className="rounded-sm border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
           <p className="font-medium">{failures.length}장을 올리지 못했어요.</p>
           <ul className="mt-1 max-h-40 list-inside list-disc overflow-auto">
             {failures.map((f, i) => (

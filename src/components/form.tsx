@@ -8,8 +8,9 @@ export type FormState = {
   values?: Record<string, string>;
 };
 
+// 밑줄형 입력: 테두리 없이 아래 선만, 포커스 시 오렌지
 const inputClass =
-  "w-full rounded-lg border border-black/15 bg-transparent px-3 py-2.5 text-base outline-none focus:border-black disabled:opacity-50 dark:border-white/20 dark:focus:border-white aria-invalid:border-red-500";
+  "w-full border-0 border-b border-line-strong bg-transparent px-0 py-2.5 text-base text-fg outline-none transition-colors placeholder:text-muted/60 focus:border-accent disabled:opacity-40 aria-invalid:border-danger [color-scheme:dark]";
 
 export function Field({
   label,
@@ -19,25 +20,25 @@ export function Field({
 }: { label: string; hint?: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm text-neutral-600 dark:text-neutral-400">{label}</span>
+      <span className="eyebrow mb-1 block text-muted">{label}</span>
       <input {...props} aria-invalid={error ? true : undefined} className={inputClass} />
       {error ? (
-        <span className="mt-1 block text-sm text-red-600 dark:text-red-400">{error}</span>
+        <span className="mt-1.5 block text-sm text-danger">{error}</span>
       ) : hint ? (
-        <span className="mt-1 block text-xs text-neutral-500">{hint}</span>
+        <span className="mt-1.5 block text-xs text-muted">{hint}</span>
       ) : null}
     </label>
   );
 }
 
 const buttonVariants = {
-  primary: "bg-black text-white dark:bg-white dark:text-black",
-  secondary: "border border-black/15 dark:border-white/20",
-  danger: "border border-red-600/40 text-red-700 dark:text-red-400",
+  primary: "bg-accent text-ink hover:bg-accent-hover",
+  secondary: "border border-line-strong text-fg hover:border-fg",
+  danger: "border border-danger/50 text-danger hover:border-danger",
 };
 
 export function buttonClass(variant: keyof typeof buttonVariants = "primary", extra = "") {
-  return `inline-flex items-center justify-center rounded-lg px-4 py-2.5 font-medium disabled:opacity-50 ${buttonVariants[variant]} ${extra}`;
+  return `inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium tracking-tight transition-colors disabled:pointer-events-none disabled:opacity-40 ${buttonVariants[variant]} ${extra}`;
 }
 
 export function SubmitButton({
@@ -61,14 +62,14 @@ export function SubmitButton({
 export function FormMessage({ error, message }: { error?: string; message?: string }) {
   if (error) {
     return (
-      <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+      <p role="alert" className="border-l-2 border-danger bg-danger/10 px-3 py-2 text-sm text-danger">
         {error}
       </p>
     );
   }
   if (message) {
     return (
-      <p role="status" className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">
+      <p role="status" className="border-l-2 border-ok bg-ok/10 px-3 py-2 text-sm text-ok">
         {message}
       </p>
     );

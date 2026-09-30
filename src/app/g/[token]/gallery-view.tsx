@@ -183,7 +183,7 @@ export function GalleryView({
             type="button"
             onClick={() => setFilter(f)}
             className={`rounded-full px-3.5 py-1.5 text-sm ${
-              filter === f ? "bg-black text-white dark:bg-white dark:text-black" : "bg-black/5 dark:bg-white/10"
+              filter === f ? "bg-fg text-ink" : "border border-line-strong text-muted hover:text-fg"
             }`}
           >
             {f === "all" ? `전체 ${photos.length}` : `고른 사진 ${selected.size}`}
@@ -192,7 +192,7 @@ export function GalleryView({
       </div>
 
       {visible.length === 0 ? (
-        <p className="px-4 py-12 text-center text-sm text-neutral-500">아직 고른 사진이 없어요.</p>
+        <p className="px-4 py-12 text-center text-sm text-muted">아직 고른 사진이 없어요.</p>
       ) : (
         <ul className="grid grid-cols-3 gap-1 sm:grid-cols-4 sm:gap-2 lg:grid-cols-6">
           {visible.map((photo) => {
@@ -203,7 +203,7 @@ export function GalleryView({
                 <button
                   type="button"
                   onClick={() => open(photo.id)}
-                  className="block aspect-square w-full overflow-hidden bg-black/5 dark:bg-white/5"
+                  className="block aspect-square w-full overflow-hidden bg-panel"
                   aria-label={`${photo.filename} 크게 보기`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -216,7 +216,7 @@ export function GalleryView({
                     className={`h-full w-full object-cover transition ${isSelected ? "opacity-80" : ""}`}
                   />
                 </button>
-                {isSelected && <span className="pointer-events-none absolute inset-0 ring-4 ring-inset ring-amber-400" />}
+                {isSelected && <span className="pointer-events-none absolute inset-0 ring-4 ring-inset ring-accent" />}
                 {pinCount > 0 && (
                   <span className="pointer-events-none absolute bottom-1 left-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[11px] text-white">
                     요청 {pinCount}
@@ -230,7 +230,7 @@ export function GalleryView({
                     aria-pressed={isSelected}
                     aria-label={isSelected ? `${photo.filename} 선택 해제` : `${photo.filename} 선택`}
                     className={`absolute top-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold ${
-                      isSelected ? "border-amber-400 bg-amber-400 text-black" : "border-white bg-black/30 text-transparent"
+                      isSelected ? "border-accent bg-accent text-ink" : "border-white bg-black/30 text-transparent"
                     }`}
                   >
                     ✓
@@ -275,7 +275,7 @@ export function GalleryView({
       {toast && (
         <div
           role="status"
-          className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-sm rounded-xl bg-neutral-900 px-4 py-3 text-center text-sm text-white shadow-lg"
+          className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-sm border border-line bg-panel-2 px-4 py-3 text-center text-sm text-white shadow-lg"
         >
           {toast}
         </div>
@@ -314,7 +314,7 @@ function SelectionBar({
         </strong>{" "}
         골랐어요
         {gallery.base_select_count > 0 && limit === null && (
-          <span className="block text-xs text-neutral-500">
+          <span className="block text-xs text-muted">
             {extra > 0
               ? `기본 ${gallery.base_select_count}장 + 추가 ${extra}장 (${formatKrw(extraAmount(count, gallery))})`
               : `기본 ${gallery.base_select_count}장 포함`}
@@ -327,7 +327,7 @@ function SelectionBar({
         type="button"
         onClick={onSubmit}
         disabled={busy || count === 0}
-        className="rounded-lg bg-black px-5 py-2.5 font-medium text-white disabled:opacity-40 dark:bg-white dark:text-black"
+        className="rounded-sm bg-accent px-5 py-2.5 font-medium text-ink disabled:opacity-40"
       >
         {busy ? "제출 중…" : "제출하기"}
       </button>
@@ -336,7 +336,7 @@ function SelectionBar({
     summary = (
       <>
         <strong>추가 {extra}장 결제가 필요해요</strong>
-        <span className="block text-xs text-neutral-500">{formatKrw(extraAmount(count, gallery))}</span>
+        <span className="block text-xs text-muted">{formatKrw(extraAmount(count, gallery))}</span>
       </>
     );
     action = (
@@ -345,7 +345,7 @@ function SelectionBar({
           type="button"
           onClick={onReopen}
           disabled={busy}
-          className="rounded-lg border border-black/15 px-3 py-2.5 text-sm font-medium disabled:opacity-40 dark:border-white/20"
+          className="rounded-sm border border-line-strong px-3 py-2.5 text-sm font-medium disabled:opacity-40"
         >
           다시 고르기
         </button>
@@ -354,7 +354,7 @@ function SelectionBar({
             type="button"
             onClick={onPay}
             disabled={busy}
-            className="rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-black"
+            className="rounded-sm bg-accent px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-40"
           >
             {busy ? "여는 중…" : "카드 결제"}
           </button>
@@ -365,20 +365,20 @@ function SelectionBar({
     summary = (
       <>
         <strong>보정본이 도착했어요</strong>
-        <span className="block text-xs text-neutral-500">위에서 한 장씩 또는 전체를 받을 수 있어요.</span>
+        <span className="block text-xs text-muted">위에서 한 장씩 또는 전체를 받을 수 있어요.</span>
       </>
     );
   } else {
     summary = (
       <>
         <strong>{count}장 셀렉을 제출했어요</strong>
-        <span className="block text-xs text-neutral-500">보정본이 준비되면 알려드릴게요.</span>
+        <span className="block text-xs text-muted">보정본이 준비되면 알려드릴게요.</span>
       </>
     );
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-neutral-950/95">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-ink/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm sm:px-6">
         <p className="min-w-0">{summary}</p>
         {action}
@@ -503,7 +503,7 @@ function Viewer({
       role="dialog"
       aria-modal="true"
       aria-label="사진 크게 보기"
-      className="fixed inset-0 z-50 flex flex-col bg-black text-white"
+      className="fixed inset-0 z-50 flex flex-col bg-ink text-fg"
       onTouchStart={(e) => (touchStartX.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (touchStartX.current === null || composing) return;
@@ -572,7 +572,7 @@ function Viewer({
               rows={2}
               autoFocus
               placeholder="예: 여기 턱선 정리해주세요"
-              className="w-full rounded-lg bg-white/10 px-3 py-2 text-base outline-none placeholder:text-white/40"
+              className="w-full rounded-sm bg-white/10 px-3 py-2 text-base outline-none placeholder:text-white/40"
             />
             <div className="flex justify-end gap-2">
               <button
@@ -582,7 +582,7 @@ function Viewer({
                   setPinMode(false);
                   setBody("");
                 }}
-                className="rounded-lg px-4 py-2 text-white/70"
+                className="rounded-sm px-4 py-2 text-white/70"
               >
                 취소
               </button>
@@ -590,7 +590,7 @@ function Viewer({
                 type="button"
                 onClick={savePin}
                 disabled={saving || !body.trim()}
-                className="rounded-lg bg-white px-4 py-2 font-medium text-black disabled:opacity-40"
+                className="rounded-sm bg-accent px-4 py-2 font-medium text-ink disabled:opacity-40"
               >
                 {saving ? "저장 중…" : "요청 남기기"}
               </button>
@@ -598,7 +598,7 @@ function Viewer({
           </div>
         ) : pinMode ? (
           <div className="flex items-center justify-between gap-3">
-            <p className="text-amber-300">사진에서 보정할 부분을 눌러주세요</p>
+            <p className="text-accent">사진에서 보정할 부분을 눌러주세요</p>
             <button type="button" onClick={() => setPinMode(false)} className="shrink-0 px-3 py-2 text-white/70">
               취소
             </button>
@@ -611,14 +611,14 @@ function Viewer({
                   type="button"
                   onClick={() => onToggle(photo.id)}
                   aria-pressed={isSelected}
-                  className={`flex-1 rounded-lg px-4 py-2.5 font-medium ${
-                    isSelected ? "bg-amber-400 text-black" : "bg-white/15"
+                  className={`flex-1 rounded-sm px-4 py-2.5 font-medium ${
+                    isSelected ? "bg-accent text-ink" : "bg-white/15"
                   }`}
                 >
                   {isSelected ? "✓ 고른 사진" : "이 사진 고르기"}
                 </button>
                 {isSelected && (
-                  <button type="button" onClick={() => setPinMode(true)} className="flex-1 rounded-lg bg-white/15 px-4 py-2.5">
+                  <button type="button" onClick={() => setPinMode(true)} className="flex-1 rounded-sm bg-white/15 px-4 py-2.5">
                     보정 요청 추가
                   </button>
                 )}

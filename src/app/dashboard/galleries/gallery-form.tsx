@@ -49,7 +49,7 @@ export function GalleryForm({ action, defaults: initial, mode, selectionLocked =
           {/* disabled 입력은 전송되지 않으므로 기존 값을 그대로 보낸다 */}
           <input type="hidden" name="baseSelectCount" value={defaults.baseSelectCount} />
           <input type="hidden" name="extraPriceKrw" value={defaults.extraPriceKrw} />
-          <p className="text-xs text-neutral-500">고객이 셀렉을 제출해서 셀렉 장수와 가격은 바꿀 수 없어요.</p>
+          <p className="text-xs text-muted">고객이 셀렉을 제출해서 셀렉 장수와 가격은 바꿀 수 없어요.</p>
         </>
       )}
 

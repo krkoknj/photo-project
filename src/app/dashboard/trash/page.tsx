@@ -17,22 +17,22 @@ export default async function TrashPage() {
 
   return (
     <>
-      <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+      <Link href="/dashboard" className="eyebrow text-muted hover:text-accent">
         ← 내 갤러리
       </Link>
-      <h1 className="mt-2 mb-6 text-2xl font-semibold">휴지통</h1>
+      <h1 className="display mt-6 mb-12 text-[clamp(3rem,8vw,6rem)]">휴지통</h1>
 
       {!galleries?.length ? (
-        <p className="text-neutral-500">휴지통이 비어 있어요.</p>
+        <p className="text-muted">휴지통이 비어 있어요.</p>
       ) : (
-        <ul className="divide-y divide-black/10 rounded-2xl border border-black/10 dark:divide-white/10 dark:border-white/10">
+        <ul className="divide-y divide-line border-y border-line">
           {galleries.map((g) => (
-            <li key={g.id} className="flex items-center justify-between gap-4 px-4 py-4">
+            <li key={g.id} className="flex items-center justify-between gap-4 py-5">
               <div className="min-w-0">
-                <Link href={`/dashboard/galleries/${g.id}`} className="block truncate font-medium hover:underline">
+                <Link href={`/dashboard/galleries/${g.id}`} className="display block truncate text-2xl hover:text-accent">
                   {g.title}
                 </Link>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-muted">
                   {g.client_name ?? "고객 미지정"} · {formatDateKst(g.trashed_at!)} 이동
                 </p>
               </div>

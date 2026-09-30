@@ -29,41 +29,41 @@ export default async function SettingsPage() {
   const hasBank = !!(settings?.bank_name && settings.bank_account && settings.bank_holder);
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-3xl space-y-12">
       <div>
-        <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+        <Link href="/dashboard" className="eyebrow text-muted hover:text-accent">
           ← 내 갤러리
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold">결제 설정</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="display mt-6 text-[clamp(3rem,8vw,6rem)]">결제 <span className="text-accent">설정</span></h1>
+        <p className="mt-1 text-sm text-muted">
           고객이 기본 장수를 넘겨 고르면 추가 보정 비용을 받아요. 결제금은 작가님께 바로 들어가요.
         </p>
       </div>
 
-      <section className="rounded-2xl border border-black/10 p-5 sm:p-6 dark:border-white/10">
+      <section className="border-t border-line pt-8">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="font-semibold">카드·간편결제 (토스페이먼츠)</h2>
+          <h2 className="display text-3xl">카드·간편결제 (토스페이먼츠)</h2>
           {toss && (
             <span
               className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                 toss.mode === "live"
-                  ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
-                  : "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                  ? "border border-ok/40 bg-ok/10 text-ok"
+                  : "border border-accent/40 bg-accent/10 text-accent"
               }`}
             >
               {toss.mode === "live" ? "실결제 연결됨" : "테스트 키 연결됨"}
             </span>
           )}
         </div>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-muted">
           토스페이먼츠 개발자센터의 <strong>API 개별 연동 키</strong>를 넣어주세요. 실제 결제를 받으려면 토스페이먼츠
           가맹점 계약이 필요해요.
         </p>
         {toss && (
-          <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-lg bg-black/[.03] p-3 text-sm dark:bg-white/[.04]">
-            <dt className="text-neutral-500">클라이언트 키</dt>
+          <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-sm bg-panel p-3 text-sm">
+            <dt className="text-muted">클라이언트 키</dt>
             <dd className="truncate font-mono">{toss.clientKey}</dd>
-            <dt className="text-neutral-500">시크릿 키</dt>
+            <dt className="text-muted">시크릿 키</dt>
             <dd className="font-mono">{toss.maskedSecret}</dd>
           </dl>
         )}
@@ -79,9 +79,9 @@ export default async function SettingsPage() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-black/10 p-5 sm:p-6 dark:border-white/10">
-        <h2 className="font-semibold">계좌이체</h2>
-        <p className="mt-1 text-sm text-neutral-500">
+      <section className="border-t border-line pt-8">
+        <h2 className="display text-3xl">계좌이체</h2>
+        <p className="mt-1 text-sm text-muted">
           고객에게 이 계좌를 안내해요. 입금을 확인한 뒤 갤러리 화면에서 &lsquo;입금 확인&rsquo;을 누르면 셀렉이 확정돼요.
         </p>
         <div className="mt-4">

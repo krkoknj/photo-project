@@ -21,40 +21,48 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">내 갤러리</h1>
-        <Link href="/dashboard/galleries/new" className={buttonClass("primary", "text-sm")}>
-          + 새 갤러리
-        </Link>
+      <div className="mb-12 flex items-end justify-between gap-6">
+        <div>
+          <p className="eyebrow mb-3 text-muted">Galleries — {String(galleries?.length ?? 0).padStart(2, "0")}</p>
+          <h1 className="display text-[clamp(3rem,8vw,6.5rem)]">
+            내 <span className="text-accent">갤러리</span>
+          </h1>
+        </div>
+        {/* 모바일은 하단 탭의 + 버튼을 쓴다 */}
+        <div className="hidden sm:block">
+          <Link href="/dashboard/galleries/new" className={buttonClass("primary")}>
+            새 갤러리 <span aria-hidden>↘</span>
+          </Link>
+        </div>
       </div>
 
       {!galleries?.length ? (
-        <div className="rounded-2xl border border-dashed border-black/20 px-6 py-16 text-center text-neutral-600 dark:border-white/20 dark:text-neutral-400">
-          <p className="mb-4">아직 갤러리가 없어요.</p>
-          <Link href="/dashboard/galleries/new" className="font-medium underline">
-            첫 갤러리 만들기
-          </Link>
-        </div>
+        <Link href="/dashboard/galleries/new" className="group block border-y border-line py-16">
+          <p className="eyebrow mb-4 text-muted">아직 갤러리가 없어요</p>
+          <p className="display text-5xl transition-colors group-hover:text-accent">첫 갤러리 만들기 ↗</p>
+        </Link>
       ) : (
-        <ul className="divide-y divide-black/10 rounded-2xl border border-black/10 dark:divide-white/10 dark:border-white/10">
-          {galleries.map((g) => (
-            <li key={g.id}>
+        <ul className="border-t border-line">
+          {galleries.map((g, i) => (
+            <li key={g.id} className="border-b border-line">
               <Link
                 href={`/dashboard/galleries/${g.id}`}
-                className="flex flex-col gap-1 px-4 py-4 hover:bg-black/[.03] sm:flex-row sm:items-center sm:justify-between dark:hover:bg-white/[.04]"
+                className="group grid grid-cols-[2.5rem_1fr] gap-x-4 gap-y-2 py-6 transition-colors sm:grid-cols-[4rem_1fr_auto] sm:items-center sm:gap-x-8"
               >
+                <span className="eyebrow pt-2 text-muted sm:pt-0">{String(i + 1).padStart(2, "0")}</span>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-medium">{g.title}</span>
-                    <StatusBadge status={g.status} />
-                  </div>
-                  <p className="text-sm text-neutral-500">
-                    {g.client_name ?? "고객 미지정"} · 사진 {g.photos[0]?.count ?? 0}장
+                  <p className="display truncate text-3xl transition-colors group-hover:text-accent sm:text-4xl">{g.title}</p>
+                  <p className="eyebrow mt-2 text-muted">
+                    {g.client_name ?? "고객 미지정"} · 사진 {g.photos[0]?.count ?? 0}장 ·{" "}
+                    {g.expires_at ? `${formatDateKst(g.expires_at)} 만료` : "만료 없음"}
                   </p>
                 </div>
-                <p className="shrink-0 text-sm text-neutral-500">
-                  {g.expires_at ? `${formatDateKst(g.expires_at)} 만료` : "만료 없음"}
-                </p>
+                <div className="col-start-2 flex items-center gap-4 sm:col-start-3">
+                  <StatusBadge status={g.status} />
+                  <span className="hidden text-xl text-muted transition-transform group-hover:translate-x-1 group-hover:text-accent sm:inline" aria-hidden>
+                    →
+                  </span>
+                </div>
               </Link>
             </li>
           ))}
@@ -62,9 +70,9 @@ export default async function DashboardPage() {
       )}
 
       {!!trashCount && (
-        <p className="mt-6 text-right text-sm">
-          <Link href="/dashboard/trash" className="text-neutral-500 hover:underline">
-            휴지통 ({trashCount})
+        <p className="mt-8 text-right">
+          <Link href="/dashboard/trash" className="eyebrow text-muted hover:text-accent">
+            휴지통 ({trashCount}) →
           </Link>
         </p>
       )}

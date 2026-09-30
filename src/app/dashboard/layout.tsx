@@ -1,6 +1,7 @@
-import Link from "next/link";
+import { Wordmark } from "@/components/brand";
 import { requireUser } from "@/lib/auth";
 import { logout } from "../(auth)/actions";
+import { BottomTabs, TopNav } from "./app-nav";
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const { supabase, userId } = await requireUser();
@@ -12,25 +13,22 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b border-black/10 px-4 py-3 dark:border-white/10 sm:px-6">
-        <Link href="/dashboard" className="font-semibold tracking-tight">
-          셀렉갤러리
-        </Link>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-neutral-600 dark:text-neutral-400 sm:inline">
-            {photographer?.display_name || photographer?.email}
-          </span>
-          <Link href="/dashboard/settings" className="text-neutral-600 hover:underline dark:text-neutral-400">
-            결제 설정
-          </Link>
-          <form action={logout}>
-            <button type="submit" className="rounded-lg border border-black/15 px-3 py-1.5 dark:border-white/20">
-              로그아웃
-            </button>
-          </form>
+      <header className="sticky top-0 z-30 flex items-start justify-between gap-6 border-b border-line bg-ink/85 px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4 backdrop-blur-md sm:px-10 sm:pt-6 sm:pb-5">
+        <Wordmark href="/dashboard" />
+        <div className="flex items-start gap-8">
+          <TopNav />
+          <div className="eyebrow flex flex-col items-end gap-0.5 text-right">
+            <span className="max-w-[10rem] truncate text-muted">{photographer?.display_name || photographer?.email}</span>
+            <form action={logout}>
+              <button type="submit" className="text-fg hover:text-accent">
+                로그아웃
+              </button>
+            </form>
+          </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-10 pb-28 sm:px-10 sm:pb-16">{children}</main>
+      <BottomTabs />
     </div>
   );
 }

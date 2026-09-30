@@ -89,14 +89,14 @@ export function DeliveredView({ photos, zipName }: { photos: DeliveredPhoto[]; z
           type="button"
           onClick={downloadAll}
           disabled={zipState !== null}
-          className="rounded-lg bg-black px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-black"
+          className="rounded-sm bg-accent px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-50"
         >
           {zipState ? `묶는 중… ${zipState.done}/${photos.length}` : `전체 다운로드 (ZIP)`}
         </button>
-        <span className="text-xs text-neutral-500">사진을 누르면 크게 보고 한 장씩 저장할 수 있어요.</span>
+        <span className="text-xs text-muted">사진을 누르면 크게 보고 한 장씩 저장할 수 있어요.</span>
       </div>
       {error && (
-        <p role="alert" className="mx-4 mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 sm:mx-0 dark:bg-red-950 dark:text-red-300">
+        <p role="alert" className="mx-4 mb-3 rounded-sm border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger sm:mx-0">
           {error}
         </p>
       )}
@@ -108,7 +108,7 @@ export function DeliveredView({ photos, zipName }: { photos: DeliveredPhoto[]; z
               type="button"
               onClick={() => open(i)}
               aria-label={`${photo.filename} 크게 보기`}
-              className="block aspect-square w-full overflow-hidden bg-black/5 dark:bg-white/5"
+              className="block aspect-square w-full overflow-hidden bg-panel"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photo.thumbUrl} alt={photo.filename} loading="lazy" className="h-full w-full object-cover" />
@@ -166,7 +166,7 @@ function DeliveredViewer({
       role="dialog"
       aria-modal="true"
       aria-label="보정본 크게 보기"
-      className="fixed inset-0 z-50 flex flex-col bg-black text-white"
+      className="fixed inset-0 z-50 flex flex-col bg-ink text-fg"
       onTouchStart={(e) => (touchStartX.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (touchStartX.current === null) return;
@@ -212,7 +212,7 @@ function DeliveredViewer({
         <a
           href={photo.downloadUrl}
           download={photo.filename}
-          className="block rounded-lg bg-white px-4 py-2.5 text-center font-medium text-black"
+          className="block rounded-sm bg-accent px-4 py-2.5 text-center font-medium text-ink"
         >
           원본 화질로 저장
         </a>

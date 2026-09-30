@@ -1,18 +1,20 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import { Wordmark } from "@/components/brand";
 
+// 로그인·가입: 왼쪽은 큰 세리프 제목, 오른쪽은 폼 (모바일에서는 위아래)
 export function AuthCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <Link href="/" className="mb-8 block text-center text-sm font-semibold tracking-tight">
-          셀렉갤러리
-        </Link>
-        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-neutral-900">
-          <h1 className="mb-6 text-xl font-semibold">{title}</h1>
-          {children}
+    <div className="flex flex-1 flex-col">
+      <header className="px-5 pt-6 sm:px-10">
+        <Wordmark />
+      </header>
+      <main className="grid flex-1 items-center gap-12 px-5 py-14 sm:px-10 lg:grid-cols-[1.2fr_1fr]">
+        <div>
+          <p className="eyebrow mb-5 text-accent">For photographers</p>
+          <h1 className="display text-[clamp(3.5rem,9vw,8rem)]">{title}</h1>
         </div>
-      </div>
-    </main>
+        <div className="w-full max-w-sm border-t border-line pt-8 lg:justify-self-end">{children}</div>
+      </main>
+    </div>
   );
 }

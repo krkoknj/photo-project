@@ -19,9 +19,10 @@ export const metadata: Metadata = {
 
 function Notice({ title, body }: { title: string; body: string }) {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-      <h1 className="text-xl font-semibold">{title}</h1>
-      <p className="mt-2 max-w-xs text-sm text-neutral-500">{body}</p>
+    <main className="flex flex-1 flex-col justify-end px-5 pt-16 pb-[max(3rem,env(safe-area-inset-bottom))] sm:px-10">
+      <p className="eyebrow mb-5 text-accent">Select Gallery</p>
+      <h1 className="display text-[clamp(3rem,11vw,8rem)]">{title}</h1>
+      <p className="mt-6 max-w-sm text-sm leading-relaxed text-muted">{body}</p>
     </main>
   );
 }
@@ -122,34 +123,44 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="px-4 pt-8 pb-5 sm:px-6">
-        <p className="text-sm text-neutral-500">{photographerName(gallery)}</p>
-        <h1 className="mt-1 text-2xl font-semibold">{gallery.title}</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          사진 {photos.length}장
-          {gallery.expires_at && ` · ${formatDateKst(gallery.expires_at)}까지 볼 수 있어요`}
-        </p>
+      <header className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-8 sm:px-10 sm:pt-8">
+        <div className="flex items-start justify-between gap-6">
+          <p className="eyebrow text-fg">
+            {photographerName(gallery)}
+            <br />
+            <span className="text-muted">Photo gallery</span>
+          </p>
+          <p className="eyebrow text-right text-muted">
+            {String(photos.length).padStart(2, "0")} photos
+            {gallery.expires_at && (
+              <>
+                <br />~ {formatDateKst(gallery.expires_at)}
+              </>
+            )}
+          </p>
+        </div>
+        <h1 className="display mt-14 text-[clamp(3rem,11vw,9rem)] break-words">{gallery.title}</h1>
         {paymentResult && (
           <p
             role="status"
-            className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+            className={`mt-4 px-4 py-3 text-sm ${
               paymentResult.tone === "ok"
-                ? "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-300"
-                : "bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+                ? "border border-ok/40 bg-ok/10 text-ok"
+                : "border border-accent/40 bg-accent/10 text-fg"
             }`}
           >
             {paymentResult.text}
           </p>
         )}
         {awaitingPayment && (
-          <div className="mt-4 space-y-2 rounded-xl border border-amber-300 px-4 py-3 text-sm dark:border-amber-800">
+          <div className="mt-4 space-y-2 border border-accent/40 px-4 py-3 text-sm">
             <p className="font-medium">추가 보정 {formatKrw(extraDue)} 결제가 필요해요</p>
             {paymentOptions.toss && <p>아래 &lsquo;카드 결제&rsquo; 버튼으로 바로 결제할 수 있어요.</p>}
             {paymentOptions.bank && (
               <p>
                 계좌이체: {paymentOptions.bank.bankName} <span className="font-mono">{paymentOptions.bank.account}</span> (
                 {paymentOptions.bank.holder})
-                <span className="block text-xs text-neutral-500">
+                <span className="block text-xs text-muted">
                   입금하시면 작가님이 확인한 뒤 셀렉이 확정돼요. 입금자명은 예약자 이름으로 해주세요.
                 </span>
               </p>
@@ -158,25 +169,27 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
           </div>
         )}
         {gallery.base_select_count > 0 && (gallery.status === "open" || awaitingPayment) && (
-          <p className="mt-4 rounded-xl bg-black/[.04] px-4 py-3 text-sm dark:bg-white/[.06]">
+          <p className="mt-4 bg-panel px-4 py-3 text-sm">
             보정 {gallery.base_select_count}장이 포함되어 있어요.
             {gallery.extra_price_krw > 0 && ` 더 고르시면 장당 ${formatKrw(gallery.extra_price_krw)}이 추가돼요.`}
           </p>
         )}
       </header>
 
-      <main className="flex-1 pb-12 sm:px-6">
+      <main className="flex-1 pb-12 sm:px-10">
         {delivered.length > 0 && (
           <section className="mb-10">
-            <h2 className="mb-1 px-4 text-lg font-semibold sm:px-0">보정본 {delivered.length}장이 도착했어요</h2>
+            <h2 className="display mb-2 px-5 text-4xl sm:px-0">
+              보정본 <span className="text-accent">{delivered.length}장</span>이 도착했어요
+            </h2>
             {gallery.delivered_at && (
-              <p className="mb-3 px-4 text-sm text-neutral-500 sm:px-0">
+              <p className="mb-3 px-4 text-sm text-muted sm:px-0">
                 {formatDateKst(gallery.delivered_at)} 전달
                 {gallery.expires_at && ` · ${formatDateKst(gallery.expires_at)}까지 받을 수 있어요`}
               </p>
             )}
             <DeliveredView photos={delivered} zipName={`${gallery.title} 보정본.zip`} />
-            <h2 className="mt-10 mb-3 px-4 text-lg font-semibold sm:px-0">고른 사진 (원본 미리보기)</h2>
+            <h2 className="eyebrow mt-14 mb-4 px-5 text-muted sm:px-0">고른 사진 — 원본 미리보기</h2>
           </section>
         )}
         {photos.length ? (
@@ -194,7 +207,7 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
             canPayByCard={!!paymentOptions.toss}
           />
         ) : (
-          <p className="px-4 text-sm text-neutral-500">아직 올라온 사진이 없어요.</p>
+          <p className="px-4 text-sm text-muted">아직 올라온 사진이 없어요.</p>
         )}
       </main>
     </div>

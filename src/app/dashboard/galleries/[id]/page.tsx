@@ -10,6 +10,7 @@ import { presignView } from "@/lib/storage";
 import {
   regenerateShareToken,
   removeGalleryPassword,
+  reopenSelection,
   restoreGallery,
   setGalleryPassword,
   setGalleryVisibility,
@@ -21,6 +22,7 @@ import { StatusBadge } from "../../status-badge";
 import { PasswordForm } from "./password-form";
 import { PhotoGrid, type GridPhoto } from "./photo-grid";
 import { PhotoUploader } from "./photo-uploader";
+import { CopyFilenamesButton, SelectionResults, type SelectedPhoto } from "./selection-results";
 import { ConfirmSubmitButton, CopyLinkButton } from "./share-link";
 
 export const metadata: Metadata = { title: "갤러리 설정" };
@@ -49,12 +51,26 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
 
   if (!gallery) notFound();
 
-  const { data: photoRows } = await supabase
-    .from("photos")
-    .select("id, filename, processing_status, thumb_key")
-    .eq("gallery_id", gallery.id)
-    .order("sort_order")
-    .order("filename");
+  const [{ data: photoRows }, { data: selectionRows }, { data: pinRows }] = await Promise.all([
+    supabase
+      .from("photos")
+      .select("id, filename, processing_status, thumb_key, preview_key, width, height")
+      .eq("gallery_id", gallery.id)
+      .order("sort_order")
+      .order("filename"),
+    supabase.from("selections").select("photo_id, is_extra").eq("gallery_id", gallery.id),
+    supabase.from("retouch_pins").select("id, photo_id, x, y, body").eq("gallery_id", gallery.id).order("created_at"),
+  ]);
+
+  const selectedById = new Map((selectionRows ?? []).map((s) => [s.photo_id, s]));
+  // 선택이 빠진 사진에 남은 핀은 작가에게 보여주지 않는다.
+  const pinsByPhoto = new Map<string, { id: string; x: number; y: number; body: string }[]>();
+  for (const p of pinRows ?? []) {
+    if (!selectedById.has(p.photo_id)) continue;
+    const list = pinsByPhoto.get(p.photo_id) ?? [];
+    list.push({ id: p.id, x: Number(p.x), y: Number(p.y), body: p.body });
+    pinsByPhoto.set(p.photo_id, list);
+  }
 
   const photos: GridPhoto[] = await Promise.all(
     (photoRows ?? []).map(async (p) => ({
@@ -62,8 +78,25 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
       filename: p.filename,
       status: p.processing_status,
       thumbUrl: p.thumb_key ? await presignView(p.thumb_key) : null,
+      selected: selectedById.has(p.id),
+      pinCount: pinsByPhoto.get(p.id)?.length ?? 0,
     })),
   );
+
+  const selectedPhotos: SelectedPhoto[] = await Promise.all(
+    (photoRows ?? [])
+      .filter((p) => selectedById.has(p.id))
+      .map(async (p) => ({
+        id: p.id,
+        filename: p.filename,
+        previewUrl: p.preview_key ? await presignView(p.preview_key) : null,
+        aspect: p.width && p.height ? p.width / p.height : 3 / 2,
+        isExtra: selectedById.get(p.id)!.is_extra,
+        pins: pinsByPhoto.get(p.id) ?? [],
+      })),
+  );
+  const totalPins = selectedPhotos.reduce((sum, p) => sum + p.pins.length, 0);
+  const extraSelected = selectedPhotos.filter((p) => p.isExtra).length;
 
   const url = shareUrl(siteUrl(), gallery.share_token);
   const locked = isSelectionLocked(gallery.status);
@@ -93,6 +126,33 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
             </button>
           </form>
         </div>
+      )}
+
+      {(locked || selectedPhotos.length > 0) && (
+        <Section
+          title={`셀렉 결과 ${selectedPhotos.length}장`}
+          description={
+            gallery.status === "open"
+              ? `고객이 고르는 중이에요 (기본 ${gallery.base_select_count}장). 제출하면 확정돼요.`
+              : gallery.status === "awaiting_payment"
+                ? `고객이 제출했고, 추가 ${extraSelected}장 결제를 기다리는 중이에요.`
+                : `고객이 제출한 셀렉이에요. 보정 요청 ${totalPins}개.`
+          }
+        >
+          {selectedPhotos.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              <CopyFilenamesButton photos={selectedPhotos} />
+              {(gallery.status === "submitted" || gallery.status === "awaiting_payment") && (
+                <form action={reopenSelection.bind(null, gallery.id)}>
+                  <ConfirmSubmitButton message="고객이 다시 고를 수 있도록 셀렉을 열까요? 고객이 다시 제출해야 확정돼요.">
+                    셀렉 다시 열기
+                  </ConfirmSubmitButton>
+                </form>
+              )}
+            </div>
+          )}
+          <SelectionResults photos={selectedPhotos} />
+        </Section>
       )}
 
       <Section

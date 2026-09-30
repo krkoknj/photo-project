@@ -10,6 +10,8 @@ export type GridPhoto = {
   filename: string;
   status: Enums<"photo_processing_status">;
   thumbUrl: string | null;
+  selected: boolean;
+  pinCount: number;
 };
 
 const POLL_MS = 3000;
@@ -50,6 +52,11 @@ export function PhotoGrid({ galleryId, photos, editable }: { galleryId: string; 
                   "처리 중…"
                 )}
               </div>
+            )}
+            {photo.selected && (
+              <span className="pointer-events-none absolute top-1 left-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[11px] font-bold text-black">
+                ✓{photo.pinCount > 0 && ` 요청 ${photo.pinCount}`}
+              </span>
             )}
             <p className="absolute inset-x-0 bottom-0 truncate bg-black/50 px-1.5 py-0.5 text-[11px] text-white">
               {photo.filename}

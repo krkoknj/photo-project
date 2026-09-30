@@ -3,7 +3,7 @@ import { formatDateKst, formatKrw } from "@/lib/gallery";
 import { getGalleryAccess, type SharedGallery } from "@/lib/gallery-access";
 import { presignView } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { unlockGallery } from "./actions";
+import { unlockGallery, type SavedPin } from "./actions";
 import { GalleryView, type ClientPhoto } from "./gallery-view";
 import { PasswordGate } from "./password-gate";
 
@@ -45,13 +45,30 @@ export default async function SharedGalleryPage({ params }: PageProps<"/g/[token
   }
 
   const { gallery } = access;
-  const { data: rows } = await createAdminClient()
-    .from("photos")
-    .select("id, filename, thumb_key, preview_key, width, height")
-    .eq("gallery_id", gallery.id)
-    .eq("processing_status", "ready")
-    .order("sort_order")
-    .order("filename");
+  const admin = createAdminClient();
+  const [{ data: rows }, { data: selections }, { data: pinRows }] = await Promise.all([
+    admin
+      .from("photos")
+      .select("id, filename, thumb_key, preview_key, width, height")
+      .eq("gallery_id", gallery.id)
+      .eq("processing_status", "ready")
+      .order("sort_order")
+      .order("filename"),
+    admin.from("selections").select("photo_id").eq("gallery_id", gallery.id),
+    admin
+      .from("retouch_pins")
+      .select("id, photo_id, x, y, body")
+      .eq("gallery_id", gallery.id)
+      .eq("author", "client")
+      .order("created_at"),
+  ]);
+  const pins: SavedPin[] = (pinRows ?? []).map((p) => ({
+    id: p.id,
+    photoId: p.photo_id,
+    x: Number(p.x),
+    y: Number(p.y),
+    body: p.body,
+  }));
 
   // 고객에게는 워터마크 미리보기와 썸네일만 전달한다 (원본 키는 조회하지도 않는다).
   const photos: ClientPhoto[] = await Promise.all(
@@ -84,7 +101,18 @@ export default async function SharedGalleryPage({ params }: PageProps<"/g/[token
 
       <main className="flex-1 pb-12 sm:px-6">
         {photos.length ? (
-          <GalleryView photos={photos} />
+          <GalleryView
+            token={token}
+            photos={photos}
+            // 클라이언트로는 필요한 필드만 보낸다 (password_hash 등 노출 금지)
+            gallery={{
+              status: gallery.status,
+              base_select_count: gallery.base_select_count,
+              extra_price_krw: gallery.extra_price_krw,
+            }}
+            initialSelected={(selections ?? []).map((s) => s.photo_id)}
+            initialPins={pins}
+          />
         ) : (
           <p className="px-4 text-sm text-neutral-500">아직 올라온 사진이 없어요.</p>
         )}

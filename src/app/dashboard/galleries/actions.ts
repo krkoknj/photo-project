@@ -133,6 +133,25 @@ export async function setGalleryVisibility(galleryId: string, visibility: "draft
   refresh(galleryId);
 }
 
+// 고객이 제출한 셀렉을 수정하고 싶어할 때 작가가 다시 열어준다. 추가 결제가 끝난 뒤에는 열 수 없다.
+export async function reopenSelection(galleryId: string) {
+  const { supabase } = await requireUser();
+
+  const { count: paid } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("gallery_id", galleryId)
+    .eq("status", "paid");
+  if (paid) return;
+
+  await supabase
+    .from("galleries")
+    .update({ status: "open", submitted_at: null })
+    .eq("id", galleryId)
+    .in("status", ["submitted", "awaiting_payment"]);
+  refresh(galleryId);
+}
+
 // 링크가 유출됐을 때 기존 링크를 무효화한다.
 export async function regenerateShareToken(galleryId: string) {
   const { supabase } = await requireUser();

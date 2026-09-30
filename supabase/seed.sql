@@ -25,3 +25,8 @@ values (
   '{"sub": "11111111-1111-1111-1111-111111111111", "email": "dev@photo.test", "email_verified": true}',
   'email', now(), now(), now()
 );
+
+-- 로컬 개발용 사진 저장소 (운영은 Cloudflare R2 버킷 사용)
+insert into storage.buckets (id, name, public)
+values ('photos', 'photos', false)
+on conflict (id) do nothing;

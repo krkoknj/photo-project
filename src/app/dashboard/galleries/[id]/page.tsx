@@ -6,6 +6,7 @@ import { buttonClass } from "@/components/form";
 import { requireUser } from "@/lib/auth";
 import { formatDateKst, isSelectionLocked, shareUrl, toDateInputKst } from "@/lib/gallery";
 import { siteUrl } from "@/lib/site";
+import { presignView } from "@/lib/storage";
 import {
   regenerateShareToken,
   removeGalleryPassword,
@@ -18,6 +19,8 @@ import {
 import { GalleryForm } from "../gallery-form";
 import { StatusBadge } from "../../status-badge";
 import { PasswordForm } from "./password-form";
+import { PhotoGrid, type GridPhoto } from "./photo-grid";
+import { PhotoUploader } from "./photo-uploader";
 import { ConfirmSubmitButton, CopyLinkButton } from "./share-link";
 
 export const metadata: Metadata = { title: "갤러리 설정" };
@@ -45,6 +48,22 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
     .maybeSingle();
 
   if (!gallery) notFound();
+
+  const { data: photoRows } = await supabase
+    .from("photos")
+    .select("id, filename, processing_status, thumb_key")
+    .eq("gallery_id", gallery.id)
+    .order("sort_order")
+    .order("filename");
+
+  const photos: GridPhoto[] = await Promise.all(
+    (photoRows ?? []).map(async (p) => ({
+      id: p.id,
+      filename: p.filename,
+      status: p.processing_status,
+      thumbUrl: p.thumb_key ? await presignView(p.thumb_key) : null,
+    })),
+  );
 
   const url = shareUrl(siteUrl(), gallery.share_token);
   const locked = isSelectionLocked(gallery.status);
@@ -150,8 +169,23 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
         />
       </Section>
 
-      <Section title="사진">
-        <p className="text-sm text-neutral-500">원본 업로드는 3단계에서 추가됩니다.</p>
+      <Section
+        title={`사진 ${photos.length}장`}
+        description="원본은 고객에게 보이지 않아요. 고객은 워터마크가 들어간 미리보기만 봐요."
+      >
+        <div className="space-y-4">
+          <PhotoUploader
+            galleryId={gallery.id}
+            disabledReason={
+              gallery.trashed_at
+                ? "휴지통에 있는 갤러리에는 사진을 올릴 수 없어요."
+                : locked
+                  ? "고객이 셀렉을 제출해서 사진을 추가하거나 뺄 수 없어요."
+                  : undefined
+            }
+          />
+          <PhotoGrid galleryId={gallery.id} photos={photos} editable={!locked && !gallery.trashed_at} />
+        </div>
       </Section>
 
       {!gallery.trashed_at && (

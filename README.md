@@ -26,3 +26,4 @@ npm run dev
 | `npx supabase db reset` | 로컬 DB 초기화 후 마이그레이션·시드 재적용 |
 | `npx supabase gen types typescript --local > src/lib/supabase/database.types.ts` | DB 타입 재생성 |
 | `npx supabase stop` | 로컬 Supabase 종료 |
+| `npm test` | 단위 테스트 (vitest) |

@@ -9,10 +9,10 @@ export const metadata: Metadata = { title: "새 갤러리" };
 export default function NewGalleryPage() {
   return (
     <div className="max-w-2xl">
-      <Link href="/dashboard" className="eyebrow text-muted hover:text-accent">
-        ← 내 갤러리
+      <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-fg">
+        ‹ 내 갤러리
       </Link>
-      <h1 className="display mt-6 mb-12 text-[clamp(3rem,8vw,6rem)]">새 <span className="text-accent">갤러리</span></h1>
+      <h1 className="display mt-4 mb-8 text-[1.75rem]">새 갤러리 만들기</h1>
       <GalleryForm
         mode="create"
         action={createGallery}

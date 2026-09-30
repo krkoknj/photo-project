@@ -29,20 +29,20 @@ export default async function SettingsPage() {
   const hasBank = !!(settings?.bank_name && settings.bank_account && settings.bank_holder);
 
   return (
-    <div className="max-w-3xl space-y-12">
+    <div className="space-y-0">
       <div>
-        <Link href="/dashboard" className="eyebrow text-muted hover:text-accent">
-          ← 내 갤러리
+        <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-fg">
+          ‹ 내 갤러리
         </Link>
-        <h1 className="display mt-6 text-[clamp(3rem,8vw,6rem)]">결제 <span className="text-accent">설정</span></h1>
+        <h1 className="display mt-4 text-[1.75rem]">결제 설정</h1>
         <p className="mt-1 text-sm text-muted">
           고객이 기본 장수를 넘겨 고르면 추가 보정 비용을 받아요. 결제금은 작가님께 바로 들어가요.
         </p>
       </div>
 
-      <section className="border-t border-line pt-8">
+      <section className="band -mx-5 px-5 pt-7 pb-8">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="display text-3xl">카드·간편결제 (토스페이먼츠)</h2>
+          <h2 className="text-lg font-extrabold">카드·간편결제 (토스페이먼츠)</h2>
           {toss && (
             <span
               className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -60,7 +60,7 @@ export default async function SettingsPage() {
           가맹점 계약이 필요해요.
         </p>
         {toss && (
-          <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-sm bg-panel p-3 text-sm">
+          <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-2xl bg-panel p-4 text-sm">
             <dt className="text-muted">클라이언트 키</dt>
             <dd className="truncate font-mono">{toss.clientKey}</dd>
             <dt className="text-muted">시크릿 키</dt>
@@ -79,8 +79,8 @@ export default async function SettingsPage() {
         )}
       </section>
 
-      <section className="border-t border-line pt-8">
-        <h2 className="display text-3xl">계좌이체</h2>
+      <section className="band -mx-5 px-5 pt-7 pb-8">
+        <h2 className="text-lg font-extrabold">계좌이체</h2>
         <p className="mt-1 text-sm text-muted">
           고객에게 이 계좌를 안내해요. 입금을 확인한 뒤 갤러리 화면에서 &lsquo;입금 확인&rsquo;을 누르면 셀렉이 확정돼요.
         </p>

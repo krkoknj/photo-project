@@ -34,7 +34,7 @@ export function PhotoGrid({ galleryId, photos, editable }: { galleryId: string; 
       {processing > 0 && <p className="text-sm text-muted">미리보기 만드는 중… {processing}장 남음</p>}
       <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
         {photos.map((photo) => (
-          <li key={photo.id} className="group relative aspect-square overflow-hidden rounded-sm bg-panel">
+          <li key={photo.id} className="group relative aspect-square overflow-hidden rounded-xl bg-panel">
             {photo.thumbUrl ? (
               // 짧게 만료되는 서명 URL이라 next/image 최적화를 거치지 않는다.
               // eslint-disable-next-line @next/next/no-img-element
@@ -54,7 +54,7 @@ export function PhotoGrid({ galleryId, photos, editable }: { galleryId: string; 
               </div>
             )}
             {photo.selected && (
-              <span className="pointer-events-none absolute top-1 left-1 rounded-full bg-accent px-1.5 py-0.5 font-mono text-[10px] text-ink">
+              <span className="pointer-events-none absolute top-1 left-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
                 ✓{photo.pinCount > 0 && ` 요청 ${photo.pinCount}`}
               </span>
             )}

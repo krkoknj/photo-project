@@ -80,7 +80,7 @@ export function RetouchPanel({
       {message && (
         <p
           role={message.tone === "error" ? "alert" : "status"}
-          className={`rounded-sm px-3 py-2 text-sm ${
+          className={`rounded-xl px-4 py-3 text-sm ${
             message.tone === "error"
               ? "border border-danger/40 bg-danger/10 text-danger"
               : "border border-ok/40 bg-ok/10 text-ok"
@@ -117,7 +117,7 @@ export function RetouchPanel({
       {matched.length > 0 && (
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
           {matched.map((file) => (
-            <li key={file.id} className="group relative aspect-square overflow-hidden rounded-sm bg-panel">
+            <li key={file.id} className="group relative aspect-square overflow-hidden rounded-xl bg-panel">
               <Thumb file={file} galleryId={galleryId} />
               <p className="absolute inset-x-0 bottom-0 truncate bg-black/60 px-1.5 py-0.5 text-[11px] text-white">
                 {photoById.get(file.photoId!)?.filename ?? file.filename}
@@ -172,7 +172,7 @@ function UnmatchedRow({ galleryId, file, photos }: { galleryId: string; file: Re
   const ordered = [...photos].sort((a, b) => Number(b.selected) - Number(a.selected));
 
   return (
-    <li className="flex flex-col gap-2 rounded-sm border border-accent/40 p-2 sm:flex-row sm:items-center">
+    <li className="flex flex-col gap-2 rounded-2xl bg-accent-soft p-3 sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-panel">
           <Thumb file={file} galleryId={galleryId} />
@@ -184,7 +184,7 @@ function UnmatchedRow({ galleryId, file, photos }: { galleryId: string; file: Re
           value={photoId}
           onChange={(e) => setPhotoId(e.target.value)}
           aria-label={`${file.filename}의 원본`}
-          className="min-w-0 flex-1 rounded-sm border border-line-strong bg-transparent px-2 py-2 text-sm sm:w-48"
+          className="min-w-0 flex-1 rounded-xl border border-line-strong bg-ink px-3 py-2.5 text-sm sm:w-48"
         >
           <option value="">원본 선택…</option>
           {ordered.map((p) => (

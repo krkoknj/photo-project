@@ -89,14 +89,14 @@ export function DeliveredView({ photos, zipName }: { photos: DeliveredPhoto[]; z
           type="button"
           onClick={downloadAll}
           disabled={zipState !== null}
-          className="rounded-sm bg-accent px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-50"
+          className="rounded-xl bg-fg px-5 py-3 text-sm font-bold text-ink disabled:opacity-50"
         >
           {zipState ? `묶는 중… ${zipState.done}/${photos.length}` : `전체 다운로드 (ZIP)`}
         </button>
         <span className="text-xs text-muted">사진을 누르면 크게 보고 한 장씩 저장할 수 있어요.</span>
       </div>
       {error && (
-        <p role="alert" className="mx-4 mb-3 rounded-sm border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger sm:mx-0">
+        <p role="alert" className="mx-4 mb-3 rounded-xl bg-danger/8 px-4 py-3 text-sm text-danger sm:mx-0">
           {error}
         </p>
       )}
@@ -166,7 +166,7 @@ function DeliveredViewer({
       role="dialog"
       aria-modal="true"
       aria-label="보정본 크게 보기"
-      className="fixed inset-0 z-50 flex flex-col bg-ink text-fg"
+      className="fixed inset-0 z-50 flex flex-col bg-black text-white"
       onTouchStart={(e) => (touchStartX.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (touchStartX.current === null) return;
@@ -212,7 +212,7 @@ function DeliveredViewer({
         <a
           href={photo.downloadUrl}
           download={photo.filename}
-          className="block rounded-sm bg-accent px-4 py-2.5 text-center font-medium text-ink"
+          className="block rounded-xl bg-accent px-4 py-3.5 text-center font-bold text-white"
         >
           원본 화질로 저장
         </a>

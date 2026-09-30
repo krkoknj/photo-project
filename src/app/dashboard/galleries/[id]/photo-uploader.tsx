@@ -136,7 +136,7 @@ export function PhotoUploader({
           setDragging(false);
           upload(e.dataTransfer.files);
         }}
-        className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed px-4 py-8 text-center transition-colors ${
+        className={`flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-4 py-9 text-center transition-colors ${
           dragging ? "border-accent bg-accent/5" : "border-line-strong"
         }`}
       >
@@ -175,7 +175,7 @@ export function PhotoUploader({
       </div>
 
       {failures.length > 0 && (
-        <div role="alert" className="rounded-sm border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+        <div role="alert" className="rounded-xl bg-danger/8 px-4 py-3 text-sm text-danger">
           <p className="font-medium">{failures.length}장을 올리지 못했어요.</p>
           <ul className="mt-1 max-h-40 list-inside list-disc overflow-auto">
             {failures.map((f, i) => (

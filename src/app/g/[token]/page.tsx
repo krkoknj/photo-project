@@ -19,10 +19,15 @@ export const metadata: Metadata = {
 
 function Notice({ title, body }: { title: string; body: string }) {
   return (
-    <main className="flex flex-1 flex-col justify-end px-5 pt-16 pb-[max(3rem,env(safe-area-inset-bottom))] sm:px-10">
-      <p className="eyebrow mb-5 text-accent">Select Gallery</p>
-      <h1 className="display text-[clamp(3rem,11vw,8rem)]">{title}</h1>
-      <p className="mt-6 max-w-sm text-sm leading-relaxed text-muted">{body}</p>
+    <main className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+      <span className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-panel text-3xl" aria-hidden>
+        🔒
+      </span>
+      <h1 className="display text-2xl">{title}</h1>
+      <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted">{body}</p>
+      <p className="mt-10 text-lg font-extrabold tracking-[-0.04em]">
+        Select<span className="text-accent">.</span>
+      </p>
     </main>
   );
 }
@@ -123,38 +128,32 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-8 sm:px-10 sm:pt-8">
-        <div className="flex items-start justify-between gap-6">
-          <p className="eyebrow text-fg">
-            {photographerName(gallery)}
-            <br />
-            <span className="text-muted">Photo gallery</span>
-          </p>
-          <p className="eyebrow text-right text-muted">
-            {String(photos.length).padStart(2, "0")} photos
-            {gallery.expires_at && (
-              <>
-                <br />~ {formatDateKst(gallery.expires_at)}
-              </>
-            )}
-          </p>
+      <header className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-6 sm:px-10 sm:pt-8">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-white">
+            {photographerName(gallery).slice(0, 1)}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold">{photographerName(gallery)}</p>
+            <p className="text-xs text-muted">
+              사진 {photos.length}장{gallery.expires_at && ` · ${formatDateKst(gallery.expires_at)}까지`}
+            </p>
+          </div>
         </div>
-        <h1 className="display mt-14 text-[clamp(3rem,11vw,9rem)] break-words">{gallery.title}</h1>
+        <h1 className="display mt-6 text-[1.75rem] break-words sm:text-4xl">{gallery.title}</h1>
         {paymentResult && (
           <p
             role="status"
-            className={`mt-4 px-4 py-3 text-sm ${
-              paymentResult.tone === "ok"
-                ? "border border-ok/40 bg-ok/10 text-ok"
-                : "border border-accent/40 bg-accent/10 text-fg"
+            className={`mt-4 rounded-2xl px-4 py-3.5 text-sm font-medium ${
+              paymentResult.tone === "ok" ? "bg-ok/10 text-ok" : "bg-accent-soft text-fg"
             }`}
           >
             {paymentResult.text}
           </p>
         )}
         {awaitingPayment && (
-          <div className="mt-4 space-y-2 border border-accent/40 px-4 py-3 text-sm">
-            <p className="font-medium">추가 보정 {formatKrw(extraDue)} 결제가 필요해요</p>
+          <div className="mt-4 space-y-2 rounded-2xl bg-accent-soft px-4 py-4 text-sm">
+            <p className="font-extrabold text-accent">추가 보정 {formatKrw(extraDue)} 결제가 필요해요</p>
             {paymentOptions.toss && <p>아래 &lsquo;카드 결제&rsquo; 버튼으로 바로 결제할 수 있어요.</p>}
             {paymentOptions.bank && (
               <p>
@@ -169,7 +168,7 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
           </div>
         )}
         {gallery.base_select_count > 0 && (gallery.status === "open" || awaitingPayment) && (
-          <p className="mt-4 bg-panel px-4 py-3 text-sm">
+          <p className="mt-4 rounded-2xl bg-panel px-4 py-3.5 text-sm">
             보정 {gallery.base_select_count}장이 포함되어 있어요.
             {gallery.extra_price_krw > 0 && ` 더 고르시면 장당 ${formatKrw(gallery.extra_price_krw)}이 추가돼요.`}
           </p>
@@ -178,9 +177,9 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
 
       <main className="flex-1 pb-12 sm:px-10">
         {delivered.length > 0 && (
-          <section className="mb-10">
-            <h2 className="display mb-2 px-5 text-4xl sm:px-0">
-              보정본 <span className="text-accent">{delivered.length}장</span>이 도착했어요
+          <section className="mb-2">
+            <h2 className="display mb-1 px-5 text-xl sm:px-0">
+              보정본 <span className="text-accent">{delivered.length}장</span>이 도착했어요 🎉
             </h2>
             {gallery.delivered_at && (
               <p className="mb-3 px-4 text-sm text-muted sm:px-0">
@@ -189,7 +188,7 @@ export default async function SharedGalleryPage({ params, searchParams }: PagePr
               </p>
             )}
             <DeliveredView photos={delivered} zipName={`${gallery.title} 보정본.zip`} />
-            <h2 className="eyebrow mt-14 mb-4 px-5 text-muted sm:px-0">고른 사진 — 원본 미리보기</h2>
+            <h2 className="band mt-10 mb-4 px-5 pt-7 text-lg font-extrabold sm:px-0">고른 사진</h2>
           </section>
         )}
         {photos.length ? (

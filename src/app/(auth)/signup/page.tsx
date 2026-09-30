@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "작가 가입" };
 
 export default function SignupPage() {
   return (
-    <AuthCard title="작가 계정 만들기">
+    <AuthCard title={"작가 계정을\n만들어볼까요?"}>
       <SignupForm />
     </AuthCard>
   );

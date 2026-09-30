@@ -24,9 +24,9 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
       <Field label="비밀번호" name="password" type="password" autoComplete="current-password" required />
       <FormMessage error={state.error} message={state.message} />
       <SubmitButton pending={pending}>로그인</SubmitButton>
-      <p className="pt-2 text-sm text-muted">
+      <p className="pt-2 text-center text-sm text-muted">
         계정이 없으신가요?{" "}
-        <Link href="/signup" className="font-medium text-fg underline decoration-accent underline-offset-4">
+        <Link href="/signup" className="font-bold text-fg underline underline-offset-4">
           가입하기
         </Link>
       </p>

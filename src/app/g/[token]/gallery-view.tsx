@@ -275,7 +275,7 @@ export function GalleryView({
       {toast && (
         <div
           role="status"
-          className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-sm border border-line bg-panel-2 px-4 py-3 text-center text-sm text-white shadow-lg"
+          className="fixed inset-x-4 bottom-24 z-[60] mx-auto max-w-sm rounded-2xl bg-fg px-4 py-3.5 text-center text-sm font-medium text-ink shadow-lg"
         >
           {toast}
         </div>
@@ -327,7 +327,7 @@ function SelectionBar({
         type="button"
         onClick={onSubmit}
         disabled={busy || count === 0}
-        className="rounded-sm bg-accent px-5 py-2.5 font-medium text-ink disabled:opacity-40"
+        className="rounded-xl bg-fg px-6 py-3 font-bold text-ink disabled:opacity-30"
       >
         {busy ? "제출 중…" : "제출하기"}
       </button>
@@ -345,7 +345,7 @@ function SelectionBar({
           type="button"
           onClick={onReopen}
           disabled={busy}
-          className="rounded-sm border border-line-strong px-3 py-2.5 text-sm font-medium disabled:opacity-40"
+          className="rounded-xl bg-panel px-4 py-3 text-sm font-bold disabled:opacity-40"
         >
           다시 고르기
         </button>
@@ -354,7 +354,7 @@ function SelectionBar({
             type="button"
             onClick={onPay}
             disabled={busy}
-            className="rounded-sm bg-accent px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-40"
+            className="rounded-xl bg-accent px-4 py-3 text-sm font-bold text-white disabled:opacity-40"
           >
             {busy ? "여는 중…" : "카드 결제"}
           </button>
@@ -503,7 +503,7 @@ function Viewer({
       role="dialog"
       aria-modal="true"
       aria-label="사진 크게 보기"
-      className="fixed inset-0 z-50 flex flex-col bg-ink text-fg"
+      className="fixed inset-0 z-50 flex flex-col bg-black text-white"
       onTouchStart={(e) => (touchStartX.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (touchStartX.current === null || composing) return;
@@ -572,7 +572,7 @@ function Viewer({
               rows={2}
               autoFocus
               placeholder="예: 여기 턱선 정리해주세요"
-              className="w-full rounded-sm bg-white/10 px-3 py-2 text-base outline-none placeholder:text-white/40"
+              className="w-full rounded-xl bg-white/10 px-4 py-3 text-base outline-none placeholder:text-white/40"
             />
             <div className="flex justify-end gap-2">
               <button
@@ -582,7 +582,7 @@ function Viewer({
                   setPinMode(false);
                   setBody("");
                 }}
-                className="rounded-sm px-4 py-2 text-white/70"
+                className="rounded-xl px-4 py-2.5 text-white/70"
               >
                 취소
               </button>
@@ -590,7 +590,7 @@ function Viewer({
                 type="button"
                 onClick={savePin}
                 disabled={saving || !body.trim()}
-                className="rounded-sm bg-accent px-4 py-2 font-medium text-ink disabled:opacity-40"
+                className="rounded-xl bg-accent px-4 py-2.5 font-bold text-white disabled:opacity-40"
               >
                 {saving ? "저장 중…" : "요청 남기기"}
               </button>
@@ -611,14 +611,14 @@ function Viewer({
                   type="button"
                   onClick={() => onToggle(photo.id)}
                   aria-pressed={isSelected}
-                  className={`flex-1 rounded-sm px-4 py-2.5 font-medium ${
+                  className={`flex-1 rounded-xl px-4 py-3 font-bold ${
                     isSelected ? "bg-accent text-ink" : "bg-white/15"
                   }`}
                 >
                   {isSelected ? "✓ 고른 사진" : "이 사진 고르기"}
                 </button>
                 {isSelected && (
-                  <button type="button" onClick={() => setPinMode(true)} className="flex-1 rounded-sm bg-white/15 px-4 py-2.5">
+                  <button type="button" onClick={() => setPinMode(true)} className="flex-1 rounded-xl bg-white/15 px-4 py-3 font-bold">
                     보정 요청 추가
                   </button>
                 )}

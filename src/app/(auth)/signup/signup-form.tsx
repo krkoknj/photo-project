@@ -35,9 +35,9 @@ export function SignupForm() {
       />
       <FormMessage error={state.error} message={state.message} />
       <SubmitButton pending={pending}>가입하기</SubmitButton>
-      <p className="pt-2 text-sm text-muted">
+      <p className="pt-2 text-center text-sm text-muted">
         이미 계정이 있으신가요?{" "}
-        <Link href="/login" className="font-medium text-fg underline decoration-accent underline-offset-4">
+        <Link href="/login" className="font-bold text-fg underline underline-offset-4">
           로그인
         </Link>
       </p>

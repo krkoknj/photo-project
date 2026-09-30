@@ -38,16 +38,13 @@ const NOTIFICATION_LABEL: Record<Enums<"notification_type">, string> = {
   expiry_warning: "만료 예정 알림 (고객)",
 };
 
-// 섹션 번호(01, 02…)는 CSS 카운터로 자동으로 붙인다 (조건부로 빠지는 섹션이 있어도 순서가 맞게).
+// 앱 화면처럼 섹션 사이를 굵은 회색 띠로 나눈다 (좌우 끝까지).
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <section className="grid gap-6 border-t border-line pt-8 [counter-increment:section] lg:grid-cols-[16rem_1fr] lg:gap-12">
-      <div>
-        <p className="eyebrow mb-3 text-accent before:content-[counter(section,decimal-leading-zero)]" />
-        <h2 className="display text-3xl">{title}</h2>
-        {description && <p className="mt-3 text-sm leading-relaxed text-muted">{description}</p>}
-      </div>
-      <div className="min-w-0">{children}</div>
+    <section className="band -mx-5 px-5 pt-7 pb-8">
+      <h2 className="text-lg font-extrabold">{title}</h2>
+      {description && <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>}
+      <div className="mt-5 min-w-0">{children}</div>
     </section>
   );
 }
@@ -154,30 +151,32 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
   const canToggleVisibility = gallery.status === "draft" || gallery.status === "open";
 
   return (
-    <div className="space-y-14 [counter-reset:section]">
-      <div>
-        <Link href="/dashboard" className="eyebrow text-muted hover:text-accent">
-          ← 내 갤러리
+    <div className="space-y-0">
+      <div className="pb-7">
+        <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-fg">
+          ‹ 내 갤러리
         </Link>
-        <h1 className="display mt-6 text-[clamp(2.75rem,7vw,6rem)] break-words">{gallery.title}</h1>
-        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <StatusBadge status={gallery.status} />
-          <span className="eyebrow text-muted">
-            {formatDateKst(gallery.created_at)} 생성 · 사진 {gallery.photos[0]?.count ?? 0}장
-            {gallery.client_name && ` · ${gallery.client_name}`}
-          </span>
+        <div className="mt-4 flex items-start justify-between gap-3">
+          <h1 className="display text-[1.75rem] break-words">{gallery.title}</h1>
+          <div className="pt-1.5">
+            <StatusBadge status={gallery.status} />
+          </div>
         </div>
+        <p className="mt-2 text-sm text-muted">
+          {formatDateKst(gallery.created_at)} 생성 · 사진 {gallery.photos[0]?.count ?? 0}장
+          {gallery.client_name && ` · ${gallery.client_name}`}
+        </p>
       </div>
 
       {gallery.status === "expired" && (
-        <div className="border border-line bg-panel p-4 text-sm text-fg/80">
+        <div className="mb-6 rounded-2xl bg-panel p-4 text-sm text-fg/80">
           공유 기간이 끝나 고객 링크가 닫혔고 원본은 정리됐어요 (정리된 원본 {purgedCount}장). 아래 설정에서 만료일을 미래로
           바꾸면 링크가 다시 열려요. 미리보기와 보정본은 그대로 남아 있어요.
         </div>
       )}
 
       {gallery.trashed_at && (
-        <div className="flex flex-col gap-3 border border-accent/40 bg-accent/10 p-4 text-sm text-fg sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-6 flex flex-col gap-3 rounded-2xl bg-accent-soft p-4 text-sm text-fg sm:flex-row sm:items-center sm:justify-between">
           <span>휴지통에 있는 갤러리예요. 고객 링크가 열리지 않아요.</span>
           <form action={restoreGallery.bind(null, gallery.id)}>
             <button type="submit" className={buttonClass("secondary", "text-sm")}>
@@ -211,7 +210,7 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
             </div>
           )}
           {gallery.status === "awaiting_payment" && (
-            <div className="mb-4 flex flex-col gap-3 border border-accent/40 bg-accent/10 p-4 text-sm text-fg sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4 flex flex-col gap-3 rounded-2xl bg-accent-soft p-4 text-sm text-fg sm:flex-row sm:items-center sm:justify-between">
               <span>
                 추가 {extraSelected}장 · {formatKrw(extraDue)} 결제 대기 중. 계좌로 입금받았다면 확인을 눌러주세요.
               </span>
@@ -259,7 +258,7 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
       )}
 
       {noPaymentMethod && (
-        <div className="border border-accent/40 bg-accent/10 p-4 text-sm text-fg">
+        <div className="band -mx-5 bg-accent-soft px-5 py-4 text-sm text-fg">
           추가 보정 가격을 정했지만 결제 방법이 없어요. 고객이 추가 결제를 할 수 있도록{" "}
           <Link href="/dashboard/settings" className="font-medium underline">
             결제 설정
@@ -281,7 +280,7 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
             readOnly
             value={url}
             aria-label="공유 링크"
-            className="min-w-0 flex-1 rounded-sm border border-line-strong bg-panel px-3 py-2.5 text-sm"
+            className="min-w-0 flex-1 rounded-xl bg-panel px-4 py-3 text-sm"
           />
           <CopyLinkButton url={url} />
         </div>

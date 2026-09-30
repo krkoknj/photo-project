@@ -18,13 +18,28 @@
    - Site URL: `https://<도메인>`
    - Redirect URLs: `https://<도메인>/auth/confirm`
 4. **Authentication > Providers > Email**: "Confirm email"을 켠다. 로컬에서는 꺼져 있다.
+   **Authentication > Email Templates > Confirm signup**의 링크를 `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`로 바꾸면 휴대폰 메일 앱에서 열어도 인증된다. 기본 템플릿은 가입한 브라우저에서만 된다.
 5. **Authentication > SMTP**: Resend SMTP를 연결한다(3단계 참고). 기본 발송은 시간당 몇 통으로 제한된다.
 6. **Project Settings > API**: 아래 두 값을 적어둔다.
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
    - Publishable key → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
    - Secret key → `SUPABASE_SECRET_KEY` (서버 전용, 절대 공개 금지)
 
-## 2. Cloudflare R2
+## 2-a. 사진 저장소: Supabase Storage (초기 권장, 추가 계정 없음)
+
+지금 운영은 이 방식이다. 로컬과 같은 S3 호환 방식이라 코드 수정이 없다.
+무료 플랜은 저장 1GB, 전송 월 5GB라 시연용이다. 실제로 쓰기 시작하면 Pro로 올리거나 R2(2단계)로 옮긴다. 옮길 때는 환경 변수만 바꾼다.
+
+1. **Storage > New bucket**: 이름은 `photos`, Public은 끄고, 파일 크기 제한은 50MB로 한다.
+2. **Storage > Settings > S3 Connection**: S3 protocol이 켜져 있는지 확인한 뒤 **New access key**를 만든다. Secret은 한 번만 보인다.
+3. 환경 변수:
+   - `S3_ENDPOINT=https://<project-ref>.storage.supabase.co/storage/v1/s3`
+   - `S3_REGION=<프로젝트 리전, 예: ap-northeast-2>`
+   - `S3_BUCKET=photos`
+   - `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` (방금 만든 키)
+4. 휴지통(`trash/`) 자동 삭제 규칙은 Supabase Storage에 없다. 필요하면 대시보드에서 정리하거나 R2로 옮긴다.
+
+## 2. Cloudflare R2 (트래픽이 늘면)
 
 1. R2 버킷을 만든다(예: `selectgallery-photos`). 공개 접근은 끈다.
 2. **CORS 정책**: 브라우저 직접 업로드와 전체 ZIP 다운로드에 필요하다.
@@ -63,9 +78,7 @@
    | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` | 1단계 |
    | `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | 2단계 |
    | `RESEND_API_KEY`, `EMAIL_FROM` | 3단계 |
-   | `GALLERY_ACCESS_SECRET` | 새 랜덤 값 (아래 명령) |
-   | `PAYMENT_SECRET_KEY` | 새 랜덤 32바이트. **잃어버리면 작가들이 토스 키를 다시 입력해야 한다** |
-   | `CRON_SECRET` | 새 랜덤 값 |
+   | `GALLERY_ACCESS_SECRET`, `PAYMENT_SECRET_KEY`, `CRON_SECRET` | `node scripts/vercel-random-secrets.mjs`로 설정한다. 값은 출력되지 않고, 이미 있는 값은 덮어쓰지 않는다. **`PAYMENT_SECRET_KEY`를 잃거나 바꾸면 작가들이 토스 키를 다시 입력해야 한다** |
 
    `MAILPIT_URL`은 넣지 않는다(로컬 전용).
 

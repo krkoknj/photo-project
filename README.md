@@ -6,6 +6,8 @@
 
 필요한 것: Node.js 20.9+, Docker Desktop
 
+배포는 [docs/deploy.md](docs/deploy.md)를 참고한다.
+
 ```bash
 npm install
 npx supabase start        # 로컬 Supabase (DB·Auth) 실행

@@ -66,7 +66,7 @@ export async function updateGallery(galleryId: string, _prev: FormState, formDat
 
   const { data: current } = await supabase
     .from("galleries")
-    .select("status, base_select_count, extra_price_krw")
+    .select("status, base_select_count, extra_price_krw, submitted_at, delivered_at")
     .eq("id", galleryId)
     .maybeSingle();
   if (!current) return { error: NOT_FOUND, values };
@@ -79,6 +79,13 @@ export async function updateGallery(galleryId: string, _prev: FormState, formDat
     return { error: "고객이 셀렉을 제출한 뒤에는 셀렉 장수와 추가 보정 가격을 바꿀 수 없습니다.", values };
   }
 
+  const expiresAt = v.expiresOn ? endOfDayKst(v.expiresOn) : null;
+  // 만료된 갤러리의 기한을 늘리면 만료 전 단계로 되돌려 고객 링크를 다시 연다 (정리된 원본은 복구되지 않음).
+  const reopened =
+    current.status === "expired" && (!expiresAt || new Date(expiresAt) > new Date())
+      ? { status: current.delivered_at ? ("delivered" as const) : current.submitted_at ? ("submitted" as const) : ("open" as const) }
+      : {};
+
   const { error } = await supabase
     .from("galleries")
     .update({
@@ -87,7 +94,8 @@ export async function updateGallery(galleryId: string, _prev: FormState, formDat
       client_email: v.clientEmail,
       base_select_count: v.baseSelectCount,
       extra_price_krw: v.extraPriceKrw,
-      expires_at: v.expiresOn ? endOfDayKst(v.expiresOn) : null,
+      expires_at: expiresAt,
+      ...reopened,
     })
     .eq("id", galleryId);
 

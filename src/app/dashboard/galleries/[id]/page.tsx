@@ -65,7 +65,7 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
   const [{ data: photoRows }, { data: selectionRows }, { data: pinRows }] = await Promise.all([
     supabase
       .from("photos")
-      .select("id, filename, processing_status, thumb_key, preview_key, width, height")
+      .select("id, filename, processing_status, thumb_key, preview_key, width, height, original_purged_at")
       .eq("gallery_id", gallery.id)
       .order("sort_order")
       .order("filename"),
@@ -106,6 +106,7 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
         pins: pinsByPhoto.get(p.id) ?? [],
       })),
   );
+  const purgedCount = (photoRows ?? []).filter((p) => p.original_purged_at).length;
   const totalPins = selectedPhotos.reduce((sum, p) => sum + p.pins.length, 0);
   const extraSelected = selectedPhotos.filter((p) => p.isExtra).length;
   const extraDue = extraAmount(selectedPhotos.length, gallery);
@@ -162,6 +163,13 @@ export default async function GalleryPage({ params }: PageProps<"/dashboard/gall
           {formatDateKst(gallery.created_at)} 생성 · 사진 {gallery.photos[0]?.count ?? 0}장
         </p>
       </div>
+
+      {gallery.status === "expired" && (
+        <div className="rounded-2xl bg-neutral-100 p-4 text-sm text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+          공유 기간이 끝나 고객 링크가 닫혔고 원본은 정리됐어요 (정리된 원본 {purgedCount}장). 아래 설정에서 만료일을 미래로
+          바꾸면 링크가 다시 열려요. 미리보기와 보정본은 그대로 남아 있어요.
+        </div>
+      )}
 
       {gallery.trashed_at && (
         <div className="flex flex-col gap-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between dark:bg-amber-950 dark:text-amber-200">

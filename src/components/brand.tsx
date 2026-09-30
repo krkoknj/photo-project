@@ -30,7 +30,8 @@ export function AppBar({
       ) : (
         <span />
       )}
-      <h1 className="truncate text-center text-[1.0625rem] font-bold">{title}</h1>
+      {/* 제목이 없을 때 빈 h1을 두지 않는다 (페이지 본문의 제목이 h1이 되도록) */}
+      {title ? <h1 className="truncate text-center text-[1.0625rem] font-bold">{title}</h1> : <span />}
       <div className="flex justify-end">{right}</div>
     </header>
   );
